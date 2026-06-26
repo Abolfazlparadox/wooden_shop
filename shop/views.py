@@ -1,3 +1,37 @@
-from django.shortcuts import render
+from django.views.generic import ListView, DetailView
+from .models import Product, ProductVariation, Category, Review
 
-# Create your views here.
+
+class ProductListView(ListView):
+    model = Product
+    template_name = 'shop/product_list.html'  # Assumed template name
+    context_object_name = 'products'
+
+    def get_queryset(self):
+        return Product.objects.filter(is_active=True).order_by('-created_at')
+
+
+class ProductDetailView(DetailView):
+    model = Product
+    template_name = 'shop/product_detail.html'  # Assumed template name
+    context_object_name = 'product'
+    slug_url_kwarg = 'slug'
+
+    def get_queryset(self):
+        # Prefetch related data to prevent N+1 queries
+        return super().get_queryset().prefetch_related(
+            'variations',
+            'images',
+            'reviews__user'  # Also fetch the user for each review
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        product = self.get_object()
+
+        # The prefetched data is already on the product object
+        context['variations'] = product.variations.all()
+        context['images'] = product.images.all()
+        context['reviews'] = product.reviews.filter(is_active=True) # Assuming an is_active flag on reviews might be useful
+
+        return context
