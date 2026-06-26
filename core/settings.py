@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -106,7 +107,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'fa-ir'
 
 TIME_ZONE = 'UTC'
 
@@ -126,3 +127,18 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
+
+JAZZMIN_SETTINGS = {
+    "site_title": "فروشگاه وودن",
+    "site_header": "مدیریت فروشگاه چوب",
+    "site_brand": "Code Paradox",
+    "welcome_sign": "به پنل مدیریت فروشگاه صنایع دستی چوبی خوش آمدید",
+    "search_model": ["accounts.CustomUser", "shop.Product"],
+    "topmenu_links": [
+        {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": "Products", "url": "admin:shop_product_changelist", "permissions": ["shop.view_product"]},
+        {"name": "Orders", "url": "admin:orders_order_changelist", "permissions": ["orders.view_order"]},
+        {"app": "accounts", "permissions": ["accounts.view_customuser"]},
+    ],
+    "show_ui_builder": True,
+}
