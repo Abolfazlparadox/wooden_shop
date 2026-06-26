@@ -1,0 +1,55 @@
+/* وارد کردن فونت زیبای وزیرمتن */
+@import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.0.0/Vazirmatn-font-face.css');
+
+body, h1, h2, h3, h4, h5, h6, .nav-link, .brand-text, input, select, textarea, button {
+    font-family: 'Vazirmatn', sans-serif !important;
+}
+
+/* ---------------------------------------------------
+   ۱. تغییر رنگ سایدبار و المان‌ها به تم چوب گردو
+--------------------------------------------------- */
+[class*="sidebar-dark-"] {
+    background-color: #4a2e1b !important; /* رنگ چوب گردوی تیره برای سایدبار */
+}
+
+[class*="sidebar-dark-"] .nav-sidebar > .nav-item > .nav-link.active,
+.btn-primary, .bg-primary, .accent-primary .btn-link {
+    background-color: #784a29 !important; /* رنگ چوب روشن‌تر برای دکمه‌ها و لینک فعال */
+    border-color: #784a29 !important;
+    color: #ffffff !important;
+}
+
+.btn-primary:hover {
+    background-color: #5C3A21 !important;
+    border-color: #5C3A21 !important;
+}
+
+/* ---------------------------------------------------
+   ۲. حل مشکل به هم ریختگی فرم‌ها در حالت RTL
+--------------------------------------------------- */
+fieldset .form-group {
+    display: flex !important;
+    flex-direction: column !important; /* قرار دادن لیبل بالای کادر متن */
+    margin-bottom: 1.5rem;
+}
+
+fieldset .control-label {
+    text-align: right !important;
+    width: 100% !important;
+    padding-right: 0 !important;
+    margin-bottom: 0.5rem !important;
+    font-weight: bold;
+    color: #4a2e1b;
+}
+
+fieldset .form-group > div {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+}
+
+/* کشیدن کادرهای متنی در کل عرض فرم برای زیبایی بیشتر */
+.vTextField, .vLargeTextField, .select2-container {
+    width: 100% !important;
+    max-width: 100% !important;
+}

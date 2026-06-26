@@ -137,12 +137,40 @@ JAZZMIN_SETTINGS = {
     "welcome_sign": "به پنل مدیریت فروشگاه صنایع دستی چوبی خوش آمدید",
     "search_model": ["accounts.CustomUser", "shop.Product"],
     "topmenu_links": [
-        {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
-        {"name": "Products", "url": "admin:shop_product_changelist", "permissions": ["shop.view_product"]},
-        {"name": "Orders", "url": "admin:orders_order_changelist", "permissions": ["orders.view_order"]},
-        {"app": "accounts", "permissions": ["accounts.view_customuser"]},
+        # نام‌ها در منوی بالا کاملاً فارسی شدند
+        {"name": "پیش‌خوان", "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": "محصولات", "url": "admin:shop_product_changelist", "permissions": ["shop.view_product"]},
+        {"name": "سفارشات", "url": "admin:orders_order_changelist", "permissions": ["orders.view_order"]},
     ],
-    "show_ui_builder": True,
+    "show_ui_builder": False,
+    "custom_css": "css/admin_custom.css",
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "theme_chooser": True, # این خط اضافه شد تا دکمه روز و شب در بالا سمت چپ فعال شود
+    "theme": "litera", # تم پایه روشن و بسیار تمیز
+    "dark_mode_theme": "darkly",
+    "navbar_small_text": False,
+    "footer_small_text": False,
+    "body_small_text": True,
+    "brand_small_text": False,
+    "brand_colour": "navbar-dark",
+    "accent": "accent-warning",
+    "navbar": "navbar-dark",
+    "no_navbar_border": False,
+    "navbar_fixed": True,
+    "layout_boxed": False,
+    "footer_fixed": False,
+    "sidebar_fixed": True,
+    "sidebar": "sidebar-dark-warning",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": True,
+    "sidebar_nav_compact_style": False,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+    "actions_sticky_top": True
 }
 
 CART_SESSION_ID = 'cart'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
