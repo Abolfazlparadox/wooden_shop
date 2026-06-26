@@ -142,3 +142,5 @@ JAZZMIN_SETTINGS = {
     ],
     "show_ui_builder": True,
 }
+
+CART_SESSION_ID = 'cart'
