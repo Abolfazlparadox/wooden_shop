@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.title }}{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-xl overflow-hidden">
+    <div class="grid grid-cols-1 md:grid-cols-2">
+        <!-- Image Section -->
+        <div class="order-1 md:order-2">
+            <div class="aspect-square w-full">
+                {% if product.images.first %}
+                    <img class="w-full h-full object-cover" src="{{ product.images.first.image.url }}" alt="{{ product.title }}">
+                {% else %}
+                    <div class="w-full h-full bg-slate-200 flex items-center justify-center">
+                        <span class="text-slate-400">بدون تصویر</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Details Section -->
+        <div class="order-2 md:order-1 p-6 md:p-8 lg:p-10 flex flex-col">
+            <h1 class="text-3xl lg:text-4xl font-bold text-slate-900">{{ product.title }}</h1>
+            <p class="mt-4 text-slate-600 leading-relaxed">{{ product.description|linebreaks }}</p>
+
+            <div class="mt-8 flex-grow">
+                <form action="{% url 'orders:cart_add' 0 %}" method="post" id="add-to-cart-form">
+                    {% csrf_token %}
+                    <h2 class="text-lg font-semibold text-slate-800 mb-4">انتخاب نوع و اندازه:</h2>
+
+                    <div class="space-y-3">
+                        {% for variation in variations %}
+                        <label for="var-{{ variation.id }}" class="flex items-center justify-between p-4 border rounded-lg cursor-pointer has-[:checked]:bg-walnut-50 has-[:checked]:border-walnut-900 transition-all">
+                            <div class="flex items-center">
+                                <input type="radio" name="variation_id" value="{{ variation.id }}" id="var-{{ variation.id }}" class="h-4 w-4 text-walnut-900 border-gray-300 focus:ring-walnut-800" {% if forloop.first %}checked{% endif %}>
+                                <div class="mr-4">
+                                    <p class="font-semibold text-slate-800">{{ variation.wood_type }} - {{ variation.dimensions }}</p>
+                                    {% if variation.stock > 0 %}
+                                        <p class="text-sm text-green-600">موجود در انبار</p>
+                                    {% else %}
+                                        <p class="text-sm text-amber-600">آماده‌سازی: {{ variation.preparation_days }} روز</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <p class="text-lg font-bold text-walnut-900">{{ variation.price|floatformat:"0" }} تومان</p>
+                        </label>
+                        {% empty %}
+                        <p class="text-slate-500">هیچ گزینه‌ای برای این محصول موجود نیست.</p>
+                        {% endfor %}
+                    </div>
+
+                    {% if variations %}
+                    <div class="mt-6">
+                        <label for="quantity" class="block text-sm font-medium text-slate-700">تعداد:</label>
+                        <input type="number" name="quantity" id="quantity" value="1" min="1" class="mt-1 block w-24 rounded-md border-gray-300 shadow-sm focus:border-walnut-800 focus:ring-walnut-800 sm:text-sm">
+                    </div>
+
+                    <div class="mt-auto pt-8">
+                        <button type="submit" class="w-full bg-walnut-900 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-walnut-800 transition-colors disabled:bg-slate-400" {% if not variations %}disabled{% endif %}>
+                            افزودن به سبد خرید
+                        </button>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Simple script to update form action based on selected variation
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('add-to-cart-form');
+        const radios = document.querySelectorAll('input[name="variation_id"]');
+
+        function updateFormAction() {
+            const selected = document.querySelector('input[name="variation_id"]:checked');
+            if (selected) {
+                const baseUrl = "{% url 'orders:cart_add' 0 %}".replace('/0/', '/');
+                form.action = baseUrl + selected.value + '/';
+            }
+        }
+
+        radios.forEach(radio => radio.addEventListener('change', updateFormAction));
+
+        // Initial call
+        updateFormAction();
+    });
+</script>
+{% endblock %}

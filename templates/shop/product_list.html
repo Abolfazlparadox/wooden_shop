@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}محصولات{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+    {% for product in products %}
+    <div class="group relative bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1">
+        <a href="{% url 'shop:product_detail' product.slug %}" class="block">
+            <div class="aspect-square w-full overflow-hidden">
+                {% if product.images.first %}
+                    <img class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" src="{{ product.images.first.image.url }}" alt="{{ product.title }}">
+                {% else %}
+                    <div class="w-full h-full bg-slate-200 flex items-center justify-center">
+                        <span class="text-slate-400">بدون تصویر</span>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="p-5 text-right">
+                <h3 class="text-lg font-semibold text-slate-800 truncate">{{ product.title }}</h3>
+                {% if product.variations.first %}
+                    <p class="text-walnut-900 font-bold mt-2">{{ product.variations.first.price|floatformat:"0" }} تومان</p>
+                {% endif %}
+                <div class="mt-4">
+                    <span class="inline-block w-full text-center bg-walnut-900 text-white py-2 px-4 rounded-md hover:bg-walnut-800 transition-colors">
+                        مشاهده جزئیات
+                    </span>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% empty %}
+    <div class="col-span-full text-center py-12">
+        <p class="text-slate-500 text-lg">هیچ محصولی برای نمایش یافت نشد.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

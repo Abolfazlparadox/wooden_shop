@@ -4,7 +4,7 @@ from .models import Product, ProductVariation, Category, Review
 
 class ProductListView(ListView):
     model = Product
-    template_name = 'shop/product_list.html'  # Assumed template name
+    template_name = 'shop/product_list.html'
     context_object_name = 'products'
 
     def get_queryset(self):
@@ -13,7 +13,7 @@ class ProductListView(ListView):
 
 class ProductDetailView(DetailView):
     model = Product
-    template_name = 'shop/product_detail.html'  # Assumed template name
+    template_name = 'shop/product_detail.html'
     context_object_name = 'product'
     slug_url_kwarg = 'slug'
 
@@ -22,16 +22,16 @@ class ProductDetailView(DetailView):
         return super().get_queryset().prefetch_related(
             'variations',
             'images',
-            'reviews__user'  # Also fetch the user for each review
+            'reviews__user'
         )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         product = self.get_object()
 
-        # The prefetched data is already on the product object
         context['variations'] = product.variations.all()
         context['images'] = product.images.all()
-        context['reviews'] = product.reviews.filter(is_active=True) # Assuming an is_active flag on reviews might be useful
+        # FIX: Removed the filter for the non-existent 'is_active' field
+        context['reviews'] = product.reviews.all()
 
         return context
