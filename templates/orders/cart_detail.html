@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}سبد خرید{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-3xl font-bold text-slate-900 mb-8">سبد خرید شما</h1>
+
+    {% if cart|length > 0 %}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        <!-- Cart Items -->
+        <div class="lg:col-span-2 space-y-6">
+            {% for item in cart %}
+            <div class="bg-white rounded-lg shadow-md p-4 flex items-center space-x-4 space-x-reverse">
+                <!-- Image -->
+                <div class="w-24 h-24 flex-shrink-0">
+                    {% with image=item.variation.images.first|default:item.variation.product.images.first %}
+                        {% if image %}
+                            <img src="{{ image.image.url }}" alt="{{ item.variation.product.title }}" class="w-full h-full rounded-md object-cover">
+                        {% else %}
+                            <div class="w-full h-full bg-slate-200 flex items-center justify-center rounded-md">
+                                <span class="text-slate-400 text-xs">بدون تصویر</span>
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+                </div>
+
+                <!-- Details -->
+                <div class="flex-grow">
+                    <a href="{% url 'shop:product_detail' item.variation.product.slug %}" class="text-lg font-semibold text-slate-800 hover:text-walnut-900 transition-colors">{{ item.variation.product.title }}</a>
+                    <p class="text-sm text-slate-500 mt-1">{{ item.variation.wood_type }} - {{ item.variation.dimensions }}</p>
+                    <p class="text-sm text-slate-500 mt-1">تعداد: {{ item.quantity }}</p>
+                </div>
+
+                <!-- Price & Actions -->
+                <div class="text-left">
+                    <p class="text-lg font-bold text-walnut-900">{{ item.total_price|floatformat:"0" }} تومان</p>
+                    <form action="{% url 'orders:cart_remove' item.variation.id %}" method="post" class="mt-2">
+                        {% csrf_token %}
+                        <button type="submit" class="text-red-500 hover:text-red-700 text-sm font-medium transition-colors">حذف</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Summary -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow-md p-6 sticky top-24">
+                <h2 class="text-xl font-bold text-slate-900 mb-4">خلاصه سفارش</h2>
+                <div class="flex justify-between items-center text-slate-600 border-b pb-4">
+                    <span>جمع کل محصولات</span>
+                    <span class="font-semibold">{{ cart.get_total_price|floatformat:"0" }} تومان</span>
+                </div>
+                <div class="flex justify-between items-center text-slate-900 font-bold mt-4 text-2xl">
+                    <span>مبلغ قابل پرداخت</span>
+                    <span>{{ cart.get_total_price|floatformat:"0" }} تومان</span>
+                </div>
+                <div class="mt-6">
+                    <a href="#" class="w-full block text-center bg-walnut-900 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-walnut-800 transition-colors">
+                        ثبت و مرحله بعد
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center bg-white rounded-lg shadow-md p-12">
+        <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        <h2 class="mt-4 text-xl font-semibold text-slate-800">سبد خرید شما خالی است</h2>
+        <p class="mt-2 text-slate-500">برای مشاهده محصولات و افزودن به سبد خرید به فروشگاه بروید.</p>
+        <div class="mt-6">
+            <a href="{% url 'shop:product_list' %}" class="inline-block bg-walnut-900 text-white py-2 px-5 rounded-md hover:bg-walnut-800 transition-colors">
+                بازگشت به فروشگاه
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

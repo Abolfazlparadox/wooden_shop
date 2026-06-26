@@ -36,10 +36,11 @@ def cart_detail(request):
             'price': item['price'],
             'total_price': item['total_price'],
         })
-    return JsonResponse({
-        'items': cart_items,
-        'total_price': cart.get_total_price(),
-        'total_items': len(cart)
-    })
+    # return JsonResponse({
+    #     'items': cart_items,
+    #     'total_price': cart.get_total_price(),
+    #     'total_items': len(cart)
+    # })
+    return render(request, 'orders/cart_detail.html', {'cart': cart})
     # Or render a template:
     # return render(request, 'orders/cart.html', {'cart': cart})
