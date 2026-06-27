@@ -138,11 +138,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 mt-12">
-        <div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center text-slate-500 dark:text-slate-400">
-            <p>&copy; {% now "Y" %} فروشگاه وودن. تمام حقوق محفوظ است.</p>
-        </div>
-    </footer>
+    {% include 'components/footer.html' %}
 
     <!-- Custom JS -->
     <script src="{% static 'js/main.js' %}"></script>
