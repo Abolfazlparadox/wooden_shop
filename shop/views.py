@@ -1,6 +1,7 @@
 from django.views.generic import ListView, DetailView
+from django.shortcuts import render, redirect
 from .models import Product, ProductVariation, Category, Review
-
+from .forms import ReviewForm
 
 class ProductListView(ListView):
     model = Product
@@ -18,20 +19,40 @@ class ProductDetailView(DetailView):
     slug_url_kwarg = 'slug'
 
     def get_queryset(self):
-        # Prefetch related data to prevent N+1 queries
         return super().get_queryset().prefetch_related(
-            'variations',
-            'images',
-            'reviews__user'
+            'variations__images', 'images', 'reviews__user'
         )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         product = self.get_object()
-
-        context['variations'] = product.variations.all()
-        context['images'] = product.images.all()
-        # FIX: Removed the filter for the non-existent 'is_active' field
+        
+        # Inject related products
+        context['related_products'] = Product.objects.filter(
+            category=product.category, is_active=True
+        ).exclude(pk=product.pk)[:4]
+        
+        # Inject reviews and review form
         context['reviews'] = product.reviews.all()
-
+        context['review_form'] = ReviewForm()
+        
         return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        review_form = ReviewForm(request.POST)
+
+        if review_form.is_valid():
+            if request.user.is_authenticated:
+                new_review = review_form.save(commit=False)
+                new_review.product = self.object
+                new_review.user = request.user
+                new_review.save()
+                return redirect(self.object.get_absolute_url())
+            else:
+                # Handle case for non-authenticated users, e.g., redirect to login
+                return redirect('login') # Assuming you have a login URL named 'login'
+
+        # If form is not valid, re-render the page with the form and errors
+        context = self.get_context_data(object=self.object, review_form=review_form)
+        return self.render_to_response(context)

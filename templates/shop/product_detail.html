@@ -1,90 +1,93 @@
 {% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
 
 {% block title %}{{ product.title }}{% endblock %}
 
 {% block content %}
-<div class="bg-white rounded-lg shadow-xl overflow-hidden">
-    <div class="grid grid-cols-1 md:grid-cols-2">
-        <!-- Image Section -->
-        <div class="order-1 md:order-2">
-            <div class="aspect-square w-full">
-                {% if product.images.first %}
-                    <img class="w-full h-full object-cover" src="{{ product.images.first.image.url }}" alt="{{ product.title }}">
-                {% else %}
-                    <div class="w-full h-full bg-slate-200 flex items-center justify-center">
-                        <span class="text-slate-400">بدون تصویر</span>
-                    </div>
-                {% endif %}
+<link rel="stylesheet" href="{% static 'css/product.css' %}">
+
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <nav class="flex items-center text-sm text-slate-500 dark:text-slate-400 mb-6">
+        <a href="{% url 'shop:product_list' %}" class="hover:text-walnut-900 transition-colors">خانه</a>
+        <svg class="w-4 h-4 mx-2 transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+        <span class="font-semibold text-slate-700 dark:text-slate-200">{{ product.title }}</span>
+    </nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div class="lg:sticky top-24 self-start">
+            <div class="image-zoomer bg-white dark:bg-slate-800 rounded-lg shadow-lg cursor-zoom-in" id="main-image-container">
+                <img id="main-image" src="{{ product.images.first.image.url }}" alt="{{ product.title }}" class="w-full h-auto object-cover aspect-square">
+                <div id="zoom-lens" class="zoom-lens"></div>
+                <div id="zoomed-image" class="zoomed-image-container hidden lg:block"></div>
+            </div>
+            <div class="grid grid-cols-5 gap-2 mt-4">
+                {% for image in product.images.all %}
+                <div class="aspect-square rounded-md overflow-hidden border-2 {% if forloop.first %}border-walnut-900 dark:border-walnut-700{% else %}border-transparent{% endif %} hover:border-walnut-800 cursor-pointer thumbnail-container transition-colors" data-image-url="{{ image.image.url }}">
+                    <img src="{{ image.image.url }}" alt="Thumbnail" class="w-full h-full object-cover">
+                </div>
+                {% endfor %}
             </div>
         </div>
 
-        <!-- Details Section -->
-        <div class="order-2 md:order-1 p-6 md:p-8 lg:p-10 flex flex-col">
-            <h1 class="text-3xl lg:text-4xl font-bold text-slate-900">{{ product.title }}</h1>
-            <p class="mt-4 text-slate-600 leading-relaxed">{{ product.description|linebreaks }}</p>
+        <div class="flex flex-col">
+            <h1 class="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white">{{ product.title }}</h1>
+            <div class="mt-3">
+                <span id="stock-badge" class="text-xs font-medium me-2 px-2.5 py-0.5 rounded"></span>
+            </div>
 
-            <div class="mt-8 flex-grow">
-                <form action="{% url 'orders:cart_add' 0 %}" method="post" id="add-to-cart-form">
-                    {% csrf_token %}
-                    <h2 class="text-lg font-semibold text-slate-800 mb-4">انتخاب نوع و اندازه:</h2>
+            <p id="main-price" class="mt-4 text-3xl font-bold text-walnut-900 dark:text-walnut-300">
+                {{ product.variations.first.price|intcomma }} تومان
+            </p>
+            <p class="mt-4 text-slate-600 dark:text-slate-300 leading-relaxed">{{ product.description|linebreaks }}</p>
 
-                    <div class="space-y-3">
-                        {% for variation in variations %}
-                        <label for="var-{{ variation.id }}" class="flex items-center justify-between p-4 border rounded-lg cursor-pointer has-[:checked]:bg-walnut-50 has-[:checked]:border-walnut-900 transition-all">
-                            <div class="flex items-center">
-                                <input type="radio" name="variation_id" value="{{ variation.id }}" id="var-{{ variation.id }}" class="h-4 w-4 text-walnut-900 border-gray-300 focus:ring-walnut-800" {% if forloop.first %}checked{% endif %}>
-                                <div class="mr-4">
-                                    <p class="font-semibold text-slate-800">{{ variation.wood_type }} - {{ variation.dimensions }}</p>
-                                    {% if variation.stock > 0 %}
-                                        <p class="text-sm text-green-600">موجود در انبار</p>
-                                    {% else %}
-                                        <p class="text-sm text-amber-600">آماده‌سازی: {{ variation.preparation_days }} روز</p>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <p class="text-lg font-bold text-walnut-900">{{ variation.price|floatformat:"0" }} تومان</p>
+            <form id="add-to-cart-form" action="#" method="post" class="mt-8" data-base-url="{% url 'orders:cart_add' 0 %}">
+                {% csrf_token %}
+
+                <div>
+                    <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200">انتخاب ویژگی:</h3>
+                    <div class="mt-2 grid grid-cols-2 gap-3">
+                        {% for var in product.variations.all %}
+                        <label class="flex items-center justify-center p-3 border rounded-md cursor-pointer has-[:checked]:bg-walnut-50 has-[:checked]:border-walnut-900 dark:has-[:checked]:bg-walnut-900/20 dark:border-slate-700 dark:has-[:checked]:border-walnut-700 transition-colors">
+                            <input type="radio" name="variation" value="{{ var.id }}" class="sr-only" data-price="{{ var.price }}" data-stock="{{ var.stock }}" {% if forloop.first %}checked{% endif %}>
+                            <span class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ var.wood_type }} - {{ var.dimensions }}</span>
                         </label>
-                        {% empty %}
-                        <p class="text-slate-500">هیچ گزینه‌ای برای این محصول موجود نیست.</p>
                         {% endfor %}
                     </div>
+                </div>
 
-                    {% if variations %}
-                    <div class="mt-6">
-                        <label for="quantity" class="block text-sm font-medium text-slate-700">تعداد:</label>
-                        <input type="number" name="quantity" id="quantity" value="1" min="1" class="mt-1 block w-24 rounded-md border-gray-300 shadow-sm focus:border-walnut-800 focus:ring-walnut-800 sm:text-sm">
+                <div class="mt-8 flex items-center space-x-4 space-x-reverse">
+                    <div class="flex items-center border border-gray-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800">
+                        <button type="button" id="quantity-minus" class="px-4 py-3 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-r-md transition-colors">-</button>
+                        <input type="number" id="quantity-input" name="quantity" value="1" min="1" class="w-16 text-center border-0 bg-transparent focus:ring-0 dark:text-white" readonly>
+                        <button type="button" id="quantity-plus" class="px-4 py-3 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-l-md transition-colors">+</button>
                     </div>
-
-                    <div class="mt-auto pt-8">
-                        <button type="submit" class="w-full bg-walnut-900 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-walnut-800 transition-colors disabled:bg-slate-400" {% if not variations %}disabled{% endif %}>
-                            افزودن به سبد خرید
-                        </button>
-                    </div>
-                    {% endif %}
-                </form>
-            </div>
+                    <button type="submit" class="flex-1 bg-walnut-900 text-white font-bold py-3 px-8 rounded-lg hover:bg-walnut-800 transition-transform active:scale-95 text-lg">
+                        افزودن به سبد خرید
+                    </button>
+                </div>
+            </form>
         </div>
+    </div>
+
+    <div class="mt-20">
+        <div class="border-b border-gray-200 dark:border-gray-700">
+            <nav class="-mb-px flex space-x-6 space-x-reverse" aria-label="Tabs">
+                <a href="#" class="border-walnut-900 text-walnut-900 dark:border-walnut-400 dark:text-walnut-400 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">محصولات مرتبط</a>
+                <a href="#" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-500 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">نقد و بررسی ({{ reviews|length }})</a>
+            </nav>
+        </div>
+
+        {% include 'shop/components/related_products.html' %}
+        {% include 'shop/components/reviews.html' %}
+
     </div>
 </div>
 
-<script>
-    // Simple script to update form action based on selected variation
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('add-to-cart-form');
-        const radios = document.querySelectorAll('input[name="variation_id"]');
+<div id="lightbox-overlay" class="fixed inset-0 z-[100] bg-black/95 hidden justify-center items-center backdrop-blur-sm">
+    <button id="lightbox-close" class="absolute top-6 right-6 text-white text-5xl hover:text-walnut-800 transition-colors cursor-pointer z-[101]">&times;</button>
+    <img id="lightbox-image" src="" alt="Fullscreen" class="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl relative z-[101]">
+</div>
 
-        function updateFormAction() {
-            const selected = document.querySelector('input[name="variation_id"]:checked');
-            if (selected) {
-                const baseUrl = "{% url 'orders:cart_add' 0 %}".replace('/0/', '/');
-                form.action = baseUrl + selected.value + '/';
-            }
-        }
-
-        radios.forEach(radio => radio.addEventListener('change', updateFormAction));
-
-        // Initial call
-        updateFormAction();
-    });
-</script>
+<script src="{% static 'js/product.js' %}"></script>
 {% endblock %}

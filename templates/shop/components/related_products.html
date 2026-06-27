@@ -1,0 +1,24 @@
+{% load humanize %}
+<div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+    {% for related_product in related_products %}
+    <div class="group relative bg-white dark:bg-slate-800 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1">
+        <a href="{{ related_product.get_absolute_url }}" class="block">
+            <div class="aspect-square w-full overflow-hidden">
+                {% with first_image=related_product.images.first %}
+                <img class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" src="{% if first_image %}{{ first_image.image.url }}{% endif %}" alt="{{ related_product.title }}">
+                {% endwith %}
+            </div>
+            <div class="p-5 text-right">
+                <h3 class="text-lg font-semibold text-slate-800 dark:text-white truncate">{{ related_product.title }}</h3>
+                <p class="text-walnut-800 dark:text-walnut-300 font-bold mt-2">
+                    {% if related_product.variations.first %}
+                        {{ related_product.variations.first.price|intcomma }} تومان
+                    {% endif %}
+                </p>
+            </div>
+        </a>
+    </div>
+    {% empty %}
+    <p class="text-slate-500 col-span-full">محصول مشابهی یافت نشد.</p>
+    {% endfor %}
+</div>

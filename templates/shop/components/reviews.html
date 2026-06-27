@@ -1,0 +1,53 @@
+<div class="mt-12">
+    <h3 class="text-xl font-bold mb-6">نظرات کاربران</h3>
+
+    <div class="space-y-6">
+        {% for review in reviews %}
+        <div class="flex space-x-4 space-x-reverse">
+            <div class="flex-shrink-0">
+                <span class="inline-flex items-center justify-center h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700">
+                    <span class="font-medium text-slate-600 dark:text-slate-200">{{ review.user.first_name|first|default:'ک' }}</span>
+                </span>
+            </div>
+            <div class="flex-grow">
+                <div class="flex items-center">
+                    <p class="font-semibold text-slate-900 dark:text-white">{{ review.user.first_name }} {{ review.user.last_name }}</p>
+                    <div class="flex items-center mr-4">
+                        {% for i in "12345"|make_list %}
+                            <svg class="w-4 h-4 {% if forloop.counter <= review.rating %}text-amber-400{% else %}text-gray-300 dark:text-gray-500{% endif %}" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                        {% endfor %}
+                    </div>
+                </div>
+                <p class="mt-2 text-slate-600 dark:text-slate-300">{{ review.comment }}</p>
+                <p class="mt-2 text-xs text-slate-400">{{ review.created_at|date:"d F Y" }}</p>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-slate-500">هنوز نظری برای این محصول ثبت نشده است. اولین نفر باشید!</p>
+        {% endfor %}
+    </div>
+
+    <div class="mt-10 pt-8 border-t dark:border-slate-700">
+        <h3 class="text-xl font-bold mb-4">نظر خود را بنویسید</h3>
+        {% if user.is_authenticated %}
+        <form action="" method="post">
+            {% csrf_token %}
+            <div class="space-y-4">
+                <div>
+                    <label for="id_rating" class="block text-sm font-medium text-gray-700 dark:text-gray-300">امتیاز شما:</label>
+                    {{ review_form.rating }}
+                </div>
+                <div>
+                    <label for="id_comment" class="block text-sm font-medium text-gray-700 dark:text-gray-300">متن نظر:</label>
+                    {{ review_form.comment }}
+                </div>
+            </div>
+            <div class="mt-6">
+                <button type="submit" class="bg-walnut-900 text-white font-bold py-2 px-6 rounded-lg hover:bg-walnut-800 transition-colors">ارسال نظر</button>
+            </div>
+        </form>
+        {% else %}
+        <p class="text-slate-600 dark:text-slate-400">برای ثبت نظر، لطفا <a href="#" class="text-walnut-900 dark:text-walnut-400 font-semibold hover:underline">وارد شوید</a>.</p>
+        {% endif %}
+    </div>
+</div>
