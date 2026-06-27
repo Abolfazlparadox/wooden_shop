@@ -3,36 +3,50 @@
 {% block title %}محصولات{% endblock %}
 
 {% block content %}
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-    {% for product in products %}
-    <div class="group relative bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1">
-        <a href="{% url 'shop:product_detail' product.slug %}" class="block">
-            <div class="aspect-square w-full overflow-hidden">
-                {% if product.images.first %}
-                    <img class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" src="{{ product.images.first.image.url }}" alt="{{ product.title }}">
-                {% else %}
-                    <div class="w-full h-full bg-slate-200 flex items-center justify-center">
-                        <span class="text-slate-400">بدون تصویر</span>
-                    </div>
-                {% endif %}
-            </div>
-            <div class="p-5 text-right">
-                <h3 class="text-lg font-semibold text-slate-800 truncate">{{ product.title }}</h3>
-                {% if product.variations.first %}
-                    <p class="text-walnut-900 font-bold mt-2">{{ product.variations.first.price|floatformat:"0" }} تومان</p>
-                {% endif %}
-                <div class="mt-4">
-                    <span class="inline-block w-full text-center bg-walnut-900 text-white py-2 px-4 rounded-md hover:bg-walnut-800 transition-colors">
-                        مشاهده جزئیات
-                    </span>
+
+<!-- Hero Banner -->
+<section class="relative bg-gray-800 text-white rounded-lg overflow-hidden mb-12">
+    <img src="https://loremflickr.com/1200/400/wood,craft,shop?random=1" alt="Hero Banner" class="absolute inset-0 w-full h-full object-cover opacity-40">
+    <div class="relative container mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold">هنر دست، از دل طبیعت</h1>
+        <p class="mt-4 text-lg md:text-xl max-w-2xl mx-auto">کالکشن جدید محصولات چوبی ما را کشف کنید. ساخته شده با عشق، برای خانه شما.</p>
+        <a href="#products" class="mt-8 inline-block bg-walnut-800 hover:bg-walnut-700 text-white font-bold py-3 px-8 rounded-lg transition-colors">مشاهده محصولات</a>
+    </div>
+</section>
+
+<!-- Product Grid -->
+<div id="products" class="container mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        {% for product in products %}
+        <div class="group relative bg-white dark:bg-slate-800 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1">
+            <a href="{{ product.get_absolute_url }}" class="block">
+                <div class="aspect-square w-full overflow-hidden">
+                    {% if product.images.first %}
+                        <img class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" src="{{ product.images.first.image.url }}" alt="{{ product.title }}">
+                    {% else %}
+                        <div class="w-full h-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
+                            <span class="text-slate-400">بدون تصویر</span>
+                        </div>
+                    {% endif %}
                 </div>
-            </div>
-        </a>
+                <div class="p-5 text-right">
+                    <h3 class="text-lg font-semibold text-slate-800 dark:text-white truncate">{{ product.title }}</h3>
+                    {% if product.variations.first %}
+                        <p class="text-walnut-800 dark:text-walnut-300 font-bold mt-2">{{ product.variations.first.price|floatformat:"0" }} تومان</p>
+                    {% endif %}
+                    <div class="mt-4">
+                        <span class="inline-block w-full text-center bg-walnut-900 text-white py-2 px-4 rounded-md hover:bg-walnut-800 transition-colors dark:bg-walnut-800 dark:hover:bg-walnut-700">
+                            مشاهده جزئیات
+                        </span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-12">
+            <p class="text-slate-500 dark:text-slate-400 text-lg">هیچ محصولی برای نمایش یافت نشد.</p>
+        </div>
+        {% endfor %}
     </div>
-    {% empty %}
-    <div class="col-span-full text-center py-12">
-        <p class="text-slate-500 text-lg">هیچ محصولی برای نمایش یافت نشد.</p>
-    </div>
-    {% endfor %}
 </div>
 {% endblock %}
