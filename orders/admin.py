@@ -1,14 +1,20 @@
 from django.contrib import admin
 from .models import Order, OrderItem, CustomOrder
 
+# orders/admin.py
+
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
     extra = 0
     readonly_fields = ('variation', 'formatted_price', 'quantity')
 
     def formatted_price(self, obj):
-        return f"{obj.price:,} تومان"
+        if obj.price is not None:
+            return f"{obj.price:,} تومان"
+        return "-"
     formatted_price.short_description = 'قیمت'
+
+# orders/admin.py
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
@@ -19,7 +25,9 @@ class OrderAdmin(admin.ModelAdmin):
     readonly_fields = ('created_at',)
 
     def formatted_total_price(self, obj):
-        return f"{obj.total_price:,} تومان"
+        if obj.total_price is not None:
+            return f"{obj.total_price:,} تومان"
+        return "-"
     formatted_total_price.short_description = 'مبلغ کل'
 
 @admin.register(CustomOrder)
@@ -30,7 +38,8 @@ class CustomOrderAdmin(admin.ModelAdmin):
     readonly_fields = ('created_at',)
 
     def formatted_proposed_price(self, obj):
-        if obj.proposed_price:
+        if obj.proposed_price is not None:
             return f"{obj.proposed_price:,} تومان"
         return "-"
     formatted_proposed_price.short_description = 'قیمت پیشنهادی'
+

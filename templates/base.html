@@ -44,69 +44,296 @@
     <div id="loader-overlay" class="loader-overlay"><div class="loader-spinner"></div></div>
     <div class="bg-walnut-900 text-white text-sm text-center py-2">ارسال رایگان برای سفارش‌های بالای ۱ میلیون تومان</div>
 
-    <header class="sticky top-0 z-50 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-b border-slate-200 dark:border-slate-700">
+    <header class="sticky top-0 z-50 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-b border-slate-200 dark:border-slate-700 shadow-sm">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex h-16 items-center justify-between">
+                <!-- Mobile Menu Button & Logo -->
                 <div class="flex items-center space-x-4 space-x-reverse">
-                    <button id="open-sidebar" class="lg:hidden p-2 rounded-md text-slate-600 dark:text-slate-300"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg></button>
-                    <a href="{% url 'shop:home_page' %}" class="text-2xl font-bold text-walnut-900 dark:text-walnut-200">وودن شاپ</a>
+                    <button id="open-sidebar" class="lg:hidden p-2 rounded-md text-slate-600 dark:text-slate-300 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg></button>
+                    <a href="{% url 'shop:home_page' %}" class="text-2xl font-bold text-walnut-900 dark:text-walnut-200 tracking-tight">وودن شاپ</a>
                 </div>
 
-                <div class="hidden lg:flex flex-1 max-w-lg mx-8">
-                    <form method="GET" action="{% url 'shop:product_list' %}" class="relative w-full">
-                        <input type="search" name="q" placeholder="جستجو در محصولات..." class="w-full bg-slate-100 dark:bg-slate-800 border-transparent focus:ring-2 focus:ring-walnut-800 focus:border-transparent rounded-md py-2 pr-10 pl-4">
+                <!-- Center: Search Input (Desktop) -->
+                <div x-data="{ open: false }" @keydown.escape.stop="open = false" @click.away="open = false" class="hidden lg:flex flex-1 max-w-lg mx-8 relative">
+                    <form method="GET" action="{% url 'shop:product_list' %}" class="w-full">
+                        <input
+                            type="search"
+                            name="q"
+                            id="live-search-input"
+                            placeholder="جستجو در محصولات..."
+                            autocomplete="off"
+                            @focus="open = true"
+                            class="w-full bg-slate-100 dark:bg-slate-800 border-transparent focus:ring-2 focus:ring-walnut-800 focus:border-transparent rounded-md py-2 pr-10 pl-4"
+                        >
                         <button type="submit" class="absolute inset-y-0 right-0 flex items-center pr-3">
                             <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         </button>
                     </form>
+                    <!-- Search Suggestions Dropdown -->
+                    <div
+                        id="search-suggestions-box"
+                        x-show="open"
+                        x-transition
+                        class="absolute w-full bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-100 dark:border-slate-700 mt-14 py-2 hidden z-[110] flex-col"
+                        style="display: none;"
+                    >
+                        <!-- JS will populate this -->
+                    </div>
                 </div>
+                <!-- Desktop Navigation Bar -->
 
+                <!-- User Actions (Theme, Cart, Auth) -->
                 <div class="flex items-center space-x-1 sm:space-x-2 space-x-reverse">
-                    <button id="theme-toggle" class="p-2 rounded-md text-slate-600 dark:text-slate-300"><svg id="theme-toggle-moon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg><svg id="theme-toggle-sun" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m8.66-15.66l-.707.707M4.04 19.96l-.707.707M21 12h-1M4 12H3m15.66 8.66l-.707-.707M4.04 4.04l-.707-.707"></path></svg></button>
-                    <a href="{% url 'orders:cart_detail' %}" class="relative p-2 rounded-md text-slate-600 dark:text-slate-300"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>{% if cart|length > 0 %}<span class="absolute top-0 right-0 -mt-1 -mr-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs">{{ cart|length }}</span>{% endif %}</a>
+                    <button id="theme-toggle" class="p-2 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"><svg id="theme-toggle-moon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg><svg id="theme-toggle-sun" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m8.66-15.66l-.707.707M4.04 19.96l-.707.707M21 12h-1M4 12H3m15.66 8.66l-.707-.707M4.04 4.04l-.707-.707"></path></svg></button>
+                    <a href="{% url 'orders:cart_detail' %}" class="relative p-2 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>{% if cart|length > 0 %}<span class="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold border-2 border-white dark:border-slate-900">{{ cart|length }}</span>{% endif %}</a>
 
                     {% if user.is_authenticated %}
                     <div x-data="{ open: false }" @keydown.escape.stop="open = false" @click.away="open = false" class="relative">
-                        <button @click="open = !open" class="p-2 rounded-md text-slate-600 dark:text-slate-300 flex items-center space-x-2 space-x-reverse">
+                        <button @click="open = !open" class="p-2 rounded-md text-slate-600 dark:text-slate-300 flex items-center space-x-2 space-x-reverse hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                         </button>
-                        <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute left-0 mt-2 w-48 origin-top-left rounded-md shadow-lg bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 focus:outline-none" style="display: none;">
-                            <div class="py-1">
-                                <div class="px-4 py-2 text-sm text-slate-700 dark:text-slate-200 border-b dark:border-slate-700">
-                                    <p class="font-semibold">{{ user.first_name|default:"کاربر" }} {{ user.last_name }}</p>
-                                    <p class="text-xs text-slate-500 truncate">{{ user.phone_number }}</p>
+                        <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute left-0 mt-2 w-48 origin-top-left rounded-xl shadow-lg bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 border border-slate-100 dark:border-slate-700 focus:outline-none z-50" style="display: none;">
+                            <div class="py-2">
+                                <div class="px-4 py-3 text-sm text-slate-700 dark:text-slate-200 border-b border-slate-100 dark:border-slate-700 mb-1">
+                                    <p class="font-bold">{{ user.first_name|default:"کاربر" }} {{ user.last_name }}</p>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 truncate mt-1">{{ user.phone_number }}</p>
                                 </div>
-                                <a href="{% url 'accounts:dashboard' %}" class="block px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">داشبورد کاربری</a>
-                                <a href="{% url 'accounts:dashboard' %}?section=orders" class="block px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">سفارشات من</a>
-                                {% if user.is_staff %}<a href="{% url 'admin:index' %}" class="block px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">پنل مدیریت</a>{% endif %}
-                                <a href="{% url 'accounts:logout' %}" class="block w-full text-right px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-700">خروج</a>
+                                <a href="{% url 'accounts:dashboard' %}" class="block px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-walnut-50 dark:hover:bg-slate-700 hover:text-walnut-900 transition-colors">داشبورد کاربری</a>
+                                <a href="{% url 'accounts:dashboard' %}?section=orders" class="block px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-walnut-50 dark:hover:bg-slate-700 hover:text-walnut-900 transition-colors">سفارشات من</a>
+                                {% if user.is_staff %}<a href="{% url 'admin:index' %}" class="block px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-walnut-50 dark:hover:bg-slate-700 hover:text-walnut-900 transition-colors">پنل مدیریت</a>{% endif %}
+                                <a href="{% url 'accounts:logout' %}" class="block w-full text-right px-4 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-slate-700 transition-colors mt-1 border-t border-slate-100 dark:border-slate-700">خروج از حساب</a>
                             </div>
                         </div>
                     </div>
                     {% else %}
-                    <a href="{% url 'accounts:login' %}" class="p-2 rounded-md text-slate-600 dark:text-slate-300 flex items-center space-x-2 space-x-reverse"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg><span class="hidden sm:inline text-sm font-semibold">ورود / ثبت‌نام</span></a>
+                    <a href="{% url 'accounts:login' %}" class="p-2 rounded-md text-slate-600 dark:text-slate-300 flex items-center space-x-2 space-x-reverse hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg><span class="hidden sm:inline text-sm font-semibold">ورود / ثبت‌نام</span></a>
                     {% endif %}
                 </div>
             </div>
         </div>
-        <nav class="hidden lg:block border-t border-slate-200 dark:border-slate-700"><div class="container mx-auto px-4 sm:px-6 lg:px-8"><div class="flex justify-center items-center space-x-8 space-x-reverse h-12"><a href="#" class="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-walnut-900 dark:hover:text-walnut-200">ظروف پذیرایی</a><a href="#" class="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-walnut-900 dark:hover:text-walnut-200">دکوریجات</a><a href="#" class="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-walnut-900 dark:hover:text-walnut-200">سفارشات اختصاصی</a><a href="#" class="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-walnut-900 dark:hover:text-walnut-200">درباره ما</a></div></div></nav>
+        <nav class="hidden lg:block border-t border-slate-100 dark:border-slate-800">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-center items-center space-x-8 space-x-reverse">
+
+                    <!-- Products Link -->
+                    <a href="{% url 'shop:product_list' %}" class="relative py-4 text-base font-bold text-slate-700 dark:text-slate-200 hover:text-walnut-900 dark:hover:text-walnut-300 transition-colors after:absolute after:bottom-0 after:right-0 after:w-0 hover:after:w-full after:h-[3px] after:bg-walnut-900 dark:after:bg-walnut-400 after:transition-all after:duration-300">
+                        محصولات
+                    </a>
+
+                    <!-- Categories Dropdown (Hover) -->
+                    <div class="relative group cursor-pointer">
+                        <div class="flex items-center space-x-1 space-x-reverse py-4 text-base font-bold text-slate-700 dark:text-slate-200 hover:text-walnut-900 dark:hover:text-walnut-300 transition-colors after:absolute after:bottom-0 after:right-0 after:w-0 hover:after:w-full after:h-[3px] after:bg-walnut-900 dark:after:bg-walnut-400 after:transition-all after:duration-300">
+                            <span>دسته‌بندی‌ها</span>
+                            <svg class="w-4 h-4 mt-0.5 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+
+                        <!-- Main Dropdown Box -->
+                        <div class="absolute right-0 top-full w-60 bg-white dark:bg-slate-800 rounded-b-xl shadow-2xl border border-t-0 border-slate-100 dark:border-slate-700 opacity-0 invisible translate-y-4 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 z-[100]">
+                            <ul class="py-3">
+                                <li class="px-5 py-2.5 hover:bg-walnut-50 dark:hover:bg-slate-700 transition-colors">
+                                    <a href="{% url 'shop:product_list' %}" class="block text-sm font-bold text-slate-800 dark:text-slate-100">همه محصولات</a>
+                                </li>
+                                <div class="h-px bg-slate-100 dark:bg-slate-700 my-1 mx-4"></div>
+
+                                <!-- Categories Loop -->
+                                {% for category in menu_categories %}
+                                <li class="relative group/sub px-5 py-2.5 hover:bg-walnut-50 dark:hover:bg-slate-700 transition-colors">
+                                    <a href="{{ category.get_absolute_url }}" class="flex items-center justify-between text-sm font-medium text-slate-700 dark:text-slate-200">
+                                        <span>{{ category.name }}</span>
+                                        {% if category.children.all %}
+                                        <svg class="w-4 h-4 transform rotate-90 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                        {% endif %}
+                                    </a>
+
+                                    <!-- Nested Tree Dropdown (If category has children) -->
+                                    {% if category.children.all %}
+                                    <div class="absolute right-full top-0 w-52 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-100 dark:border-slate-700 opacity-0 invisible translate-x-4 group-hover/sub:opacity-100 group-hover/sub:visible group-hover/sub:translate-x-0 transition-all duration-300 z-[101]">
+                                        <ul class="py-2">
+                                            {% for child in category.children.all %}
+                                            <li class="px-5 py-2.5 hover:bg-walnut-50 dark:hover:bg-slate-700 transition-colors">
+                                                <a href="{{ child.get_absolute_url }}" class="block text-sm font-medium text-slate-700 dark:text-slate-200">{{ child.name }}</a>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                    {% endif %}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Other Nav Links -->
+                    <a href="#" class="relative py-4 text-base font-bold text-slate-700 dark:text-slate-200 hover:text-walnut-900 dark:hover:text-walnut-300 transition-colors after:absolute after:bottom-0 after:right-0 after:w-0 hover:after:w-full after:h-[3px] after:bg-walnut-900 dark:after:bg-walnut-400 after:transition-all after:duration-300">سفارش محصولات اختصاصی</a>
+
+                    <a href="#" class="relative py-4 text-base font-bold text-slate-700 dark:text-slate-200 hover:text-walnut-900 dark:hover:text-walnut-300 transition-colors after:absolute after:bottom-0 after:right-0 after:w-0 hover:after:w-full after:h-[3px] after:bg-walnut-900 dark:after:bg-walnut-400 after:transition-all after:duration-300">وبلاگ</a>
+
+                    <a href="#" class="relative py-4 text-base font-bold text-slate-700 dark:text-slate-200 hover:text-walnut-900 dark:hover:text-walnut-300 transition-colors after:absolute after:bottom-0 after:right-0 after:w-0 hover:after:w-full after:h-[3px] after:bg-walnut-900 dark:after:bg-walnut-400 after:transition-all after:duration-300">درباره ما</a>
+
+                    <a href="#" class="relative py-4 text-base font-bold text-slate-700 dark:text-slate-200 hover:text-walnut-900 dark:hover:text-walnut-300 transition-colors after:absolute after:bottom-0 after:right-0 after:w-0 hover:after:w-full after:h-[3px] after:bg-walnut-900 dark:after:bg-walnut-400 after:transition-all after:duration-300">پشتیبانی</a>
+                </div>
+            </div>
+        </nav>
     </header>
 
-    <div id="sidebar-backdrop" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden"></div>
-    <div id="mobile-sidebar" class="fixed top-0 right-0 h-full w-64 bg-white dark:bg-slate-900 shadow-xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out lg:hidden"><div class="p-4"><div class="flex justify-between items-center mb-6"><span class="text-xl font-bold text-walnut-900 dark:text-walnut-200">منو</span><button id="close-sidebar" class="p-2 rounded-md text-slate-600 dark:text-slate-300"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button></div><nav class="flex flex-col space-y-4"><a href="#" class="text-slate-700 dark:text-slate-200 hover:text-walnut-900 dark:hover:text-walnut-200">ظروف پذیرایی</a><a href="#" class="text-slate-700 dark:text-slate-200 hover:text-walnut-900 dark:hover:text-walnut-200">دکوریجات</a><a href="#" class="text-slate-700 dark:text-slate-200 hover:text-walnut-900 dark:hover:text-walnut-200">سفارشات اختصاصی</a><a href="#" class="text-slate-700 dark:text-slate-200 hover:text-walnut-900 dark:hover:text-walnut-200">درباره ما</a></nav></div></div>
+    <!-- Mobile Sidebar -->
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity"></div>
+    <div id="mobile-sidebar" class="fixed top-0 right-0 h-full w-72 bg-white dark:bg-slate-900 shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out lg:hidden">
+        <div class="p-5">
+            <div class="flex justify-between items-center mb-8 border-b dark:border-slate-700 pb-4">
+                <span class="text-2xl font-bold text-walnut-900 dark:text-walnut-200">منوی سایت</span>
+                <button id="close-sidebar" class="p-2 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-red-50 hover:text-red-500 transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            </div>
+
+            <nav class="flex flex-col space-y-2">
+                <a href="{% url 'shop:product_list' %}" class="block px-4 py-3 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-walnut-50 dark:hover:bg-slate-800 hover:text-walnut-900 font-bold transition-colors">محصولات</a>
+
+                <!-- Alpine JS Mobile Accordion for Categories -->
+                <div x-data="{ expanded: false }" class="rounded-lg">
+                    <button @click="expanded = !expanded" class="flex items-center justify-between w-full px-4 py-3 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-walnut-50 dark:hover:bg-slate-800 hover:text-walnut-900 font-bold transition-colors">
+                        <span>دسته‌بندی‌ها</span>
+                        <svg :class="{'rotate-180': expanded}" class="w-5 h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div x-show="expanded" x-collapse class="px-4 pb-2 space-y-1 mt-1 border-r-2 border-walnut-200 dark:border-slate-700 mr-6">
+                        <a href="{% url 'shop:product_list' %}" class="block py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-walnut-800">همه محصولات</a>
+                        {% for category in menu_categories %}
+                            <a href="{{ category.get_absolute_url }}" class="block py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-walnut-800">{{ category.name }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <a href="#" class="block px-4 py-3 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-walnut-50 dark:hover:bg-slate-800 hover:text-walnut-900 font-bold transition-colors">سفارش محصولات اختصاصی</a>
+                <a href="#" class="block px-4 py-3 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-walnut-50 dark:hover:bg-slate-800 hover:text-walnut-900 font-bold transition-colors">وبلاگ</a>
+                <a href="#" class="block px-4 py-3 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-walnut-50 dark:hover:bg-slate-800 hover:text-walnut-900 font-bold transition-colors">درباره ما</a>
+                <a href="#" class="block px-4 py-3 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-walnut-50 dark:hover:bg-slate-800 hover:text-walnut-900 font-bold transition-colors">پشتیبانی</a>
+            </nav>
+        </div>
+    </div>
 
     <main>{% block content %}{% endblock %}</main>
     {% include 'components/footer.html' %}
+
     <script src="{% static 'js/main.js' %}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const toastContainer = document.getElementById('toast-container');
-            function createToast(message, level) {
-                // ... (Toast logic is unchanged)
+
+            function createToast(message, tags) {
+                const toast = document.createElement('div');
+
+                // تعیین رنگ و آیکون بر اساس نوع پیام (ارور، موفقیت، هشدار)
+                let bgColor = 'bg-slate-800'; // پیش‌فرض
+                let icon = '';
+
+                if (tags.includes('success')) {
+                    bgColor = 'bg-emerald-500 dark:bg-emerald-600';
+                    icon = '<svg class="w-6 h-6 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+                } else if (tags.includes('error')) {
+                    bgColor = 'bg-rose-500 dark:bg-rose-600';
+                    icon = '<svg class="w-6 h-6 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+                } else if (tags.includes('warning')) {
+                    bgColor = 'bg-amber-500 dark:bg-amber-600';
+                    icon = '<svg class="w-6 h-6 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>';
+                }
+
+                // استایل‌دهی به باکس نوتیفیکیشن با کلاس‌های Tailwind
+                toast.className = `flex items-center w-full max-w-xs p-4 mb-4 text-white ${bgColor} rounded-xl shadow-2xl transform transition-all duration-500 translate-x-full opacity-0`;
+                toast.innerHTML = `${icon}<div class="text-sm font-bold">${message}</div>`;
+
+                toastContainer.appendChild(toast);
+
+                // انیمیشن ورود (Slide in)
+                setTimeout(() => {
+                    toast.classList.remove('translate-x-full', 'opacity-0');
+                }, 50);
+
+                // انیمیشن خروج و پاک شدن (پس از 5 ثانیه)
+                setTimeout(() => {
+                    toast.classList.add('translate-x-full', 'opacity-0');
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 500);
+                }, 5000);
             }
-            {% if messages %}{% for message in messages %}createToast("{{ message }}", "{{ message.tags }}");{% endfor %}{% endif %}
+
+            // دریافت پیام‌های بک‌اند جنگو و نمایش آن‌ها
+            {% if messages %}
+                {% for message in messages %}
+                    createToast("{{ message }}", "{{ message.tags }}");
+                {% endfor %}
+            {% endif %}
         });
     </script>
-    {% block extra_script %}{% endblock %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('live-search-input');
+        const suggestionsBox = document.getElementById('search-suggestions-box');
+        const searchUrl = "{% url 'shop:search_suggestions_api' %}";
+
+        const debounce = (func, delay) => {
+            let timeoutId;
+            return (...args) => {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => {
+                    func.apply(this, args);
+                }, delay);
+            };
+        };
+
+        const fetchSuggestions = async (query) => {
+            if (query.length < 2) {
+                suggestionsBox.classList.add('hidden');
+                suggestionsBox.innerHTML = '';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${searchUrl}?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                suggestionsBox.innerHTML = ''; // Clear previous results
+
+                if (data.suggestions && data.suggestions.length > 0) {
+                    data.suggestions.forEach(item => {
+                        const link = document.createElement('a');
+                        link.href = item.url;
+                        link.className = 'flex items-center justify-between px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors';
+
+                        let categoryHtml = item.category ? `<span class="text-xs text-blue-500">در ${item.category}</span>` : '';
+
+                        link.innerHTML = `
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-slate-400 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                <span>${item.title}</span>
+                            </div>
+                            ${categoryHtml}
+                        `;
+                        suggestionsBox.appendChild(link);
+                    });
+                    suggestionsBox.classList.remove('hidden');
+                } else {
+                    suggestionsBox.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Error fetching search suggestions:', error);
+                suggestionsBox.classList.add('hidden');
+            }
+        };
+
+        searchInput.addEventListener('input', debounce((e) => {
+            fetchSuggestions(e.target.value);
+        }, 300));
+
+        // Hide when clicking outside
+        document.addEventListener('click', function(event) {
+            const searchContainer = searchInput.closest('.relative');
+            if (!searchContainer.contains(event.target)) {
+                suggestionsBox.classList.add('hidden');
+            }
+        });
+    });
+    </script>
+    {% block extra_script %}
+    {% endblock %}
 </body>
 </html>

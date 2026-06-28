@@ -1,11 +1,27 @@
 from django.db import models
 from django.conf import settings
 from django.urls import reverse
+from django.utils.text import slugify
 
+class Tag(models.Model):
+    name = models.CharField(max_length=100, unique=True, verbose_name="نام تگ")
+    slug = models.SlugField(max_length=120, unique=True, allow_unicode=True, verbose_name="اسلاگ")
+
+    class Meta:
+        verbose_name = "تگ"
+        verbose_name_plural = "تگ‌ها"
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name, allow_unicode=True)
+        super().save(*args, **kwargs)
 
 class Category(models.Model):
     name = models.CharField(max_length=255, verbose_name="نام دسته")
-    slug = models.SlugField(unique=True, verbose_name="اسلاگ")
+    slug = models.SlugField(max_length=255, unique=True, allow_unicode=True, verbose_name="اسلاگ")
 
     class Meta:
         verbose_name = "دسته بندی"
@@ -14,11 +30,16 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name, allow_unicode=True)
+        super().save(*args, **kwargs)
 
 class Product(models.Model):
     category = models.ForeignKey(Category, related_name='products', on_delete=models.CASCADE, verbose_name="دسته بندی")
+    tags = models.ManyToManyField(Tag, related_name='products', blank=True, verbose_name="تگ‌ها")
     title = models.CharField(max_length=255, verbose_name="عنوان")
-    slug = models.SlugField(unique=True, verbose_name="اسلاگ")
+    slug = models.SlugField(max_length=255, unique=True, allow_unicode=True, verbose_name="اسلاگ")
     description = models.TextField(verbose_name="توضیحات")
     is_active = models.BooleanField(default=True, verbose_name="فعال")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
@@ -34,6 +55,10 @@ class Product(models.Model):
     def get_absolute_url(self):
         return reverse('shop:product_detail', kwargs={'slug': self.slug})
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title, allow_unicode=True)
+        super().save(*args, **kwargs)
 
 class ProductVariation(models.Model):
     product = models.ForeignKey(Product, related_name='variations', on_delete=models.CASCADE, verbose_name="محصول")
@@ -52,7 +77,6 @@ class ProductVariation(models.Model):
     def __str__(self):
         return f"{self.product.title} - {self.sku}"
 
-
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, related_name='images', on_delete=models.CASCADE, verbose_name="محصول")
     variation = models.ForeignKey(ProductVariation, related_name='images', on_delete=models.CASCADE, null=True, blank=True, verbose_name="تنوع")
@@ -65,7 +89,6 @@ class ProductImage(models.Model):
 
     def __str__(self):
         return f"تصویر برای {self.product.title}"
-
 
 class Review(models.Model):
     product = models.ForeignKey(Product, related_name='reviews', on_delete=models.CASCADE, verbose_name="محصول")

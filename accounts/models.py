@@ -12,6 +12,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False, verbose_name="کارمند")
     is_phone_verified = models.BooleanField(default=False, verbose_name="تلفن تایید شده")
     date_joined = models.DateTimeField(default=timezone.now, verbose_name="تاریخ عضویت")
+    
+    # Security fields
+    failed_login_attempts = models.IntegerField(default=0, verbose_name="تعداد تلاش ناموفق")
+    locked_until = models.DateTimeField(null=True, blank=True, verbose_name="قفل تا")
 
     objects = CustomUserManager()
 
@@ -56,7 +60,6 @@ class Address(models.Model):
         return f"آدرس برای {self.user.phone_number} در {self.city}"
 
     def save(self, *args, **kwargs):
-        # If this address is being set as default, unset all others for this user
         if self.is_default:
             Address.objects.filter(user=self.user, is_default=True).update(is_default=False)
         super().save(*args, **kwargs)

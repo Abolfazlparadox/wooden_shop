@@ -4,7 +4,37 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from .models import Product, Category, Review
 from .forms import ReviewForm
+from django.http import JsonResponse
 
+# shop/views.py
+
+def search_suggestions_api(request):
+    """
+    API endpoint for live search suggestions.
+    """
+    query = request.GET.get('q', '').strip()
+
+    # Return empty if query is too short
+    if len(query) < 2:
+        return JsonResponse({'suggestions': []})
+
+    # Query products by title, slug, and tags
+    products = Product.objects.filter(
+        Q(title__icontains=query) |
+        Q(slug__icontains=query) |
+        Q(tags__name__icontains=query)
+    ).distinct().select_related('category')[:4] # Limit to 4 results and optimize category query
+
+    suggestions = [
+        {
+            'title': p.title,
+            'url': p.get_absolute_url(),
+            'category': p.category.name if p.category else ''
+        }
+        for p in products
+    ]
+
+    return JsonResponse({'suggestions': suggestions})
 def home_page(request):
     categories = Category.objects.all()
     featured_products = Product.objects.filter(is_active=True).order_by('-created_at')[:8]
@@ -22,7 +52,8 @@ def product_list(request):
     if query:
         products = products.filter(
             Q(title__icontains=query) |
-            Q(description__icontains=query)
+            Q(description__icontains=query) |
+            Q(tags__name__icontains=query)
         )
 
     # Filtering

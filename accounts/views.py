@@ -5,14 +5,17 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from datetime import timedelta
-from .forms import (
-    UserRegistrationForm, UserLoginForm, OTPVerifyForm, ForgotPasswordForm, 
-    SetNewPasswordForm, ProfileInfoForm, AddressForm
-)
+from .forms import *
 from .models import CustomUser, OTP, Address
 from orders.models import Order
 
-def generate_otp(user):
+def generate_otp(user, resend=False):
+    if resend:
+        latest_otp = OTP.objects.filter(user=user).last()
+        if latest_otp and timezone.now() - latest_otp.created_at < timedelta(minutes=2):
+            messages.error(request, 'لطفاً برای دریافت کد جدید ۲ دقیقه صبر کنید.')
+            return None
+    
     code = str(random.randint(100000, 999999))
     OTP.objects.create(user=user, code=code)
     print(f"--- MOCK SMS: Your OTP for {user.phone_number} is: {code} ---")
@@ -28,10 +31,10 @@ def user_register(request):
             user.set_password(form.cleaned_data['password'])
             user.is_phone_verified = False
             user.save()
-            generate_otp(user)
-            request.session['phone_number_for_otp'] = user.phone_number
-            messages.success(request, 'ثبت نام موفق بود. کد تایید به شماره شما ارسال شد.')
-            return redirect('accounts:otp_verify')
+            if generate_otp(user):
+                request.session['phone_number_for_otp'] = user.phone_number
+                messages.success(request, 'ثبت نام موفق بود. کد تایید به شماره شما ارسال شد.')
+                return redirect('accounts:otp_verify')
     else:
         form = UserRegistrationForm()
     return render(request, 'accounts/login_register.html', {'form': form, 'page_type': 'register'})
@@ -71,18 +74,38 @@ def user_login(request):
         form = UserLoginForm(request.POST)
         if form.is_valid():
             cd = form.cleaned_data
-            user = authenticate(request, phone_number=cd['phone_number'], password=cd['password'])
-            if user is not None:
-                if not user.is_phone_verified:
-                    generate_otp(user)
-                    request.session['phone_number_for_otp'] = user.phone_number
-                    messages.error(request, 'حساب شما فعال نشده است. لطفا کد تایید را وارد کنید.')
-                    return redirect('accounts:otp_verify')
-                login(request, user)
-                messages.success(request, 'شما با موفقیت وارد شدید.')
-                return redirect('accounts:dashboard')
-            else:
-                messages.error(request, 'شماره تلفن یا کلمه عبور نامعتبر است.')
+            phone_number = cd['phone_number']
+            password = cd['password']
+            try:
+                user = CustomUser.objects.get(phone_number=phone_number)
+                if user.locked_until and user.locked_until > timezone.now():
+                    messages.error(request, 'حساب شما به دلیل تلاش‌های ناموفق متعدد موقتا قفل شده است.')
+                    return render(request, 'accounts/login_register.html', {'form': form, 'page_type': 'login'})
+
+                user_auth = authenticate(request, phone_number=phone_number, password=password)
+                if user_auth is not None:
+                    user.failed_login_attempts = 0
+                    user.locked_until = None
+                    user.save()
+                    if not user.is_phone_verified:
+                        generate_otp(user)
+                        request.session['phone_number_for_otp'] = user.phone_number
+                        messages.warning(request, 'حساب شما فعال نشده است. لطفا کد تایید را وارد کنید.')
+                        return redirect('accounts:otp_verify')
+                    login(request, user_auth)
+                    messages.success(request, 'شما با موفقیت وارد شدید.')
+                    return redirect('accounts:dashboard')
+                else:
+                    user.failed_login_attempts += 1
+                    if user.failed_login_attempts >= 3:
+                        user.locked_until = timezone.now() + timedelta(minutes=5)
+                        user.failed_login_attempts = 0
+                        messages.error(request, 'رمز عبور اشتباه است. حساب شما به مدت ۵ دقیقه قفل شد.')
+                    else:
+                        messages.error(request, 'شماره تلفن یا کلمه عبور نامعتبر است.')
+                    user.save()
+            except CustomUser.DoesNotExist:
+                messages.error(request, 'کاربری با این شماره تلفن یافت نشد.')
     else:
         form = UserLoginForm()
     return render(request, 'accounts/login_register.html', {'form': form, 'page_type': 'login'})
@@ -91,14 +114,13 @@ def user_login(request):
 def user_logout(request):
     logout(request)
     messages.info(request, 'شما با موفقیت خارج شدید.')
-    return redirect('shop:product_list')
+    return redirect('shop:home_page')
 
 @login_required
 def user_dashboard(request):
     user = request.user
     profile_form = ProfileInfoForm(instance=user)
     address_form = AddressForm()
-    
     if request.method == 'POST':
         if 'update_profile' in request.POST:
             profile_form = ProfileInfoForm(request.POST, instance=user)
@@ -106,7 +128,6 @@ def user_dashboard(request):
                 profile_form.save()
                 messages.success(request, 'اطلاعات حساب شما با موفقیت به روز شد.')
                 return redirect('accounts:dashboard')
-
         elif 'add_address' in request.POST:
             address_form = AddressForm(request.POST)
             if address_form.is_valid():
@@ -115,16 +136,11 @@ def user_dashboard(request):
                 address.save()
                 messages.success(request, 'آدرس جدید با موفقیت اضافه شد.')
                 return redirect('accounts:dashboard')
-    
     orders = Order.objects.filter(user=user).order_by('-created_at')
     addresses = Address.objects.filter(user=user)
-
     context = {
-        'orders': orders,
-        'addresses': addresses,
-        'profile_form': profile_form,
-        'address_form': address_form,
-        'section': request.GET.get('section', 'orders')
+        'orders': orders, 'addresses': addresses, 'profile_form': profile_form,
+        'address_form': address_form, 'section': request.GET.get('section', 'orders')
     }
     return render(request, 'accounts/dashboard.html', context)
 
@@ -143,10 +159,10 @@ def forgot_password(request):
             phone_number = form.cleaned_data['phone_number']
             try:
                 user = CustomUser.objects.get(phone_number=phone_number)
-                generate_otp(user)
-                request.session['phone_for_reset'] = phone_number
-                messages.success(request, 'کد بازیابی برای شما ارسال شد.')
-                return redirect('accounts:reset_verify_otp')
+                if generate_otp(user, resend=True) is not None:
+                    request.session['phone_for_reset'] = phone_number
+                    messages.success(request, 'کد بازیابی برای شما ارسال شد.')
+                    return redirect('accounts:reset_verify_otp')
             except CustomUser.DoesNotExist:
                 messages.error(request, 'کاربری با این شماره تلفن یافت نشد.')
     else:
@@ -157,7 +173,6 @@ def reset_verify_otp(request):
     phone_number = request.session.get('phone_for_reset')
     if not phone_number:
         return redirect('accounts:forgot_password')
-
     if request.method == 'POST':
         form = OTPVerifyForm(request.POST)
         if form.is_valid():
@@ -181,20 +196,16 @@ def set_new_password(request):
     if not request.session.get('otp_verified_for_reset'):
         messages.error(request, 'ابتدا باید کد تایید را وارد کنید.')
         return redirect('accounts:forgot_password')
-
     phone_number = request.session.get('phone_for_reset')
     user = CustomUser.objects.get(phone_number=phone_number)
-
     if request.method == 'POST':
         form = SetNewPasswordForm(request.POST)
         if form.is_valid():
             new_password = form.cleaned_data['password']
             user.set_password(new_password)
             user.save()
-            
             del request.session['phone_for_reset']
             del request.session['otp_verified_for_reset']
-            
             messages.success(request, 'رمز عبور شما با موفقیت تغییر کرد. لطفا وارد شوید.')
             return redirect('accounts:login')
     else:
