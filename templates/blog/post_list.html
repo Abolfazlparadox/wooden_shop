@@ -1,0 +1,328 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}وبلاگ | وودن شاپ{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/blog.css' %}">
+{% endblock %}
+
+{% block content %}
+
+{# ════════════════════════════════════════════════════════════ #}
+{#  HERO SECTION                                               #}
+{# ════════════════════════════════════════════════════════════ #}
+<section class="relative bg-walnut-900 overflow-hidden py-20 md:py-28">
+    {# Decorative blobs #}
+    <div class="absolute top-0 left-0 w-96 h-96 rounded-full bg-walnut-800 opacity-40 -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+    <div class="absolute bottom-0 right-0 w-72 h-72 rounded-full bg-walnut-950 opacity-30 translate-x-1/3 translate-y-1/3 pointer-events-none"></div>
+    <div class="absolute inset-0 opacity-5 pointer-events-none" style="background-image:repeating-linear-gradient(45deg,#fff 0,#fff 1px,transparent 0,transparent 50%);background-size:20px 20px;"></div>
+
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+        <span class="inline-block px-4 py-1.5 mb-6 text-xs font-bold tracking-widest uppercase text-walnut-300 bg-walnut-800/60 rounded-full border border-walnut-700 backdrop-blur-sm">
+            دانش · هنر · صنایع دستی
+        </span>
+
+        <h1 class="text-4xl md:text-6xl font-black text-white mb-5 leading-tight">
+            وبلاگ وودن شاپ
+        </h1>
+        <p class="text-walnut-200 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-10">
+            راهنماها، داستان‌ها و اطلاعات تخصصی درباره صنایع دستی چوبی، هنر ایرانی و طراحی داخلی
+        </p>
+
+        {# Hero search form #}
+        <form method="GET" action="{% url 'blog:post_list' %}" class="max-w-xl mx-auto flex gap-2">
+            {% if current_tag %}
+            <input type="hidden" name="tag" value="{{ current_tag.slug }}">
+            {% endif %}
+            <input type="search" name="q" value="{{ query }}"
+                   placeholder="جستجو در مقالات..."
+                   class="flex-1 px-5 py-3.5 rounded-xl bg-white/10 border border-white/25 text-white placeholder-walnut-300 focus:ring-2 focus:ring-walnut-400 focus:border-transparent outline-none backdrop-blur-sm text-sm">
+            <button type="submit"
+                    class="px-6 py-3.5 bg-walnut-50 text-walnut-900 font-bold rounded-xl hover:bg-white transition-all duration-200 text-sm shrink-0 shadow-lg">
+                جستجو
+            </button>
+        </form>
+    </div>
+</section>
+
+{# ─── Breadcrumb ─────────────────────────────────────────────────────────────── #}
+<div class="bg-white dark:bg-slate-800/80 border-b border-slate-100 dark:border-slate-700 backdrop-blur-sm">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-3">
+        <nav class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+            <a href="{% url 'shop:home_page' %}" class="hover:text-walnut-900 dark:hover:text-walnut-300 transition-colors">خانه</a>
+            <svg class="w-3.5 h-3.5 rotate-180 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+            <a href="{% url 'blog:post_list' %}" class="hover:text-walnut-900 dark:hover:text-walnut-300 transition-colors font-medium">وبلاگ</a>
+            {% if current_tag %}
+            <svg class="w-3.5 h-3.5 rotate-180 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+            <span class="text-walnut-800 dark:text-walnut-300 font-semibold">{{ current_tag.name }}</span>
+            {% endif %}
+        </nav>
+    </div>
+</div>
+
+{# ════════════════════════════════════════════════════════════ #}
+{#  MAIN CONTENT: POSTS + SIDEBAR                             #}
+{# ════════════════════════════════════════════════════════════ #}
+<section class="bg-slate-50 dark:bg-slate-900 py-12 md:py-16">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+
+        {# ── Active Filters Bar ──────────────────────────────────────────── #}
+        {% if query or current_tag %}
+        <div class="mb-8 flex flex-wrap items-center gap-3 p-4 bg-walnut-50 dark:bg-slate-800 rounded-2xl border border-walnut-100 dark:border-slate-700">
+            <span class="text-sm font-bold text-walnut-900 dark:text-walnut-300">فیلترهای فعال:</span>
+
+            {% if query %}
+            <a href="{% url 'blog:post_list' %}{% if current_tag %}?tag={{ current_tag.slug }}{% endif %}"
+               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-walnut-900 text-white text-xs font-bold rounded-full hover:bg-walnut-800 transition-colors">
+                جستجو: {{ query }}
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+            </a>
+            {% endif %}
+
+            {% if current_tag %}
+            <a href="{% url 'blog:post_list' %}{% if query %}?q={{ query }}{% endif %}"
+               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-walnut-600 text-white text-xs font-bold rounded-full hover:bg-walnut-700 transition-colors">
+                برچسب: {{ current_tag.name }}
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+            </a>
+            {% endif %}
+
+            <a href="{% url 'blog:post_list' %}"
+               class="text-xs text-slate-400 dark:text-slate-500 hover:text-red-500 transition-colors mr-auto">
+                حذف همه فیلترها
+            </a>
+        </div>
+        {% endif %}
+
+        {# ── 2-column grid: posts (right/start) · sidebar (left/end) ────── #}
+        {# In RTL, the first grid child appears on the RIGHT side.           #}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10 items-start">
+
+            {# ═══════════════════════════════════════════════════════════════ #}
+            {#  POSTS GRID — col-span-2 (right side in RTL)                  #}
+            {# ═══════════════════════════════════════════════════════════════ #}
+            <div class="lg:col-span-2">
+                {% if page_obj.object_list %}
+
+                {# Posts header #}
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-black text-slate-800 dark:text-slate-100">
+                        {% if query or current_tag %}نتایج جستجو{% else %}جدیدترین مقالات{% endif %}
+                    </h2>
+                    <span class="text-sm text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-100 dark:border-slate-700 font-medium">
+                        {{ page_obj.paginator.count }} مقاله
+                    </span>
+                </div>
+
+                {# Cards grid #}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {% for post in page_obj %}
+                    <article class="blog-card group bg-white dark:bg-slate-800 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-slate-100 dark:border-slate-700 flex flex-col">
+
+                        {# ── Post Image ───────────────────────────────── #}
+                        <a href="{{ post.get_absolute_url }}" class="block">
+                            <div class="blog-card-image-wrapper h-52 relative bg-walnut-100 dark:bg-slate-700">
+                                {% if post.image %}
+                                <img src="{{ post.image.url }}" alt="{{ post.title }}"
+                                     class="w-full h-full object-cover" loading="lazy">
+                                {% else %}
+                                <div class="w-full h-full flex items-center justify-center">
+                                    <svg class="w-14 h-14 text-walnut-300 dark:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                                {% endif %}
+                                {# Tag badges overlaid on image #}
+                                <div class="absolute bottom-0 right-0 p-3 flex flex-wrap gap-1.5">
+                                    {% for tag in post.tags.all|slice:":2" %}
+                                    <span class="px-2.5 py-0.5 bg-walnut-900/80 text-walnut-100 text-xs font-semibold rounded-full backdrop-blur-sm">
+                                        {{ tag.name }}
+                                    </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </a>
+
+                        {# ── Card Content ─────────────────────────────── #}
+                        <div class="p-5 flex flex-col flex-1">
+                            <h2 class="text-base font-bold text-slate-800 dark:text-slate-100 line-clamp-2 mb-2 group-hover:text-walnut-900 dark:group-hover:text-walnut-300 transition-colors leading-relaxed">
+                                <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+                            </h2>
+
+                            <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2 flex-1 mb-4">
+                                {{ post.content|truncatechars:110 }}
+                            </p>
+
+                            {# ── Meta row ─────────────────────────────── #}
+                            <div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-700/60">
+                                {# Author #}
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-walnut-600 to-walnut-900 flex items-center justify-center text-white text-xs font-black shrink-0">
+                                        {{ post.author.first_name|first|default:post.author.phone_number|first|upper }}
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">
+                                            {{ post.author.first_name|default:"نویسنده" }} {{ post.author.last_name }}
+                                        </p>
+                                        <p class="text-xs text-slate-400 dark:text-slate-500">{{ post.created_at|date:"j N Y" }}</p>
+                                    </div>
+                                </div>
+                                {# Reading time #}
+                                <span class="flex items-center gap-1 text-xs text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-700/50 px-2.5 py-1 rounded-lg shrink-0">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    {{ post.reading_time }} دقیقه
+                                </span>
+                            </div>
+
+                            {# Read more link #}
+                            <a href="{{ post.get_absolute_url }}"
+                               class="inline-flex items-center gap-1.5 mt-4 text-sm font-bold text-walnut-900 dark:text-walnut-400 hover:gap-3 transition-all duration-200 group/link">
+                                ادامه مطلب
+                                <svg class="w-4 h-4 rotate-180 transition-transform duration-200 group-hover/link:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+
+                {# ── Pagination ──────────────────────────────────────────── #}
+                {% if page_obj.has_other_pages %}
+                <nav class="mt-10 flex items-center justify-center gap-2 flex-wrap" aria-label="صفحه‌بندی">
+                    {% if page_obj.has_previous %}
+                    <a href="?{% if query %}q={{ query }}&{% endif %}{% if current_tag %}tag={{ current_tag.slug }}&{% endif %}page={{ page_obj.previous_page_number }}"
+                       class="flex items-center gap-1.5 px-4 py-2.5 bg-white dark:bg-slate-800 text-walnut-900 dark:text-walnut-300 font-bold text-sm rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-walnut-50 dark:hover:bg-slate-700 hover:border-walnut-300 dark:hover:border-walnut-700 transition-all shadow-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        قبلی
+                    </a>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <span class="w-10 h-10 flex items-center justify-center bg-walnut-900 text-white font-black text-sm rounded-xl shadow-md cursor-default">{{ num }}</span>
+                        {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+                        <a href="?{% if query %}q={{ query }}&{% endif %}{% if current_tag %}tag={{ current_tag.slug }}&{% endif %}page={{ num }}"
+                           class="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-sm rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-walnut-50 dark:hover:bg-slate-700 hover:border-walnut-300 transition-all shadow-sm">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <a href="?{% if query %}q={{ query }}&{% endif %}{% if current_tag %}tag={{ current_tag.slug }}&{% endif %}page={{ page_obj.next_page_number }}"
+                       class="flex items-center gap-1.5 px-4 py-2.5 bg-white dark:bg-slate-800 text-walnut-900 dark:text-walnut-300 font-bold text-sm rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-walnut-50 dark:hover:bg-slate-700 hover:border-walnut-300 dark:hover:border-walnut-700 transition-all shadow-sm">
+                        بعدی
+                        <svg class="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    </a>
+                    {% endif %}
+                </nav>
+                {% endif %}
+
+                {% else %}
+                {# ── Empty State ─────────────────────────────────────────── #}
+                <div class="flex flex-col items-center justify-center py-24 text-center">
+                    <div class="w-24 h-24 rounded-full bg-walnut-100 dark:bg-slate-800 flex items-center justify-center mb-6 shadow-inner">
+                        <svg class="w-12 h-12 text-walnut-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2">هیچ مقاله‌ای یافت نشد</h3>
+                    <p class="text-slate-500 dark:text-slate-400 mb-6 max-w-sm text-sm leading-relaxed">
+                        {% if query or current_tag %}
+                        فیلترهای انتخابی نتیجه‌ای نداشتند. کلمه دیگری جستجو کنید یا فیلترها را حذف کنید.
+                        {% else %}
+                        به زودی مطالب جذابی منتشر می‌شود. سر بزنید!
+                        {% endif %}
+                    </p>
+                    <a href="{% url 'blog:post_list' %}"
+                       class="px-6 py-2.5 bg-walnut-900 text-white font-bold rounded-xl hover:bg-walnut-800 transition-colors text-sm shadow-md">
+                        مشاهده همه مقالات
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            {# ═══════════════════════════════════════════════════════════════ #}
+            {#  SIDEBAR — col-span-1 (left side in RTL)                      #}
+            {# ═══════════════════════════════════════════════════════════════ #}
+            <aside class="space-y-6 lg:sticky lg:top-24">
+
+                {# ── Search Box ─────────────────────────────────────────── #}
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-sm">
+                    <h3 class="text-sm font-black text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
+                        <span class="w-7 h-7 rounded-lg bg-walnut-100 dark:bg-walnut-950 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-walnut-900 dark:text-walnut-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </span>
+                        جستجو در وبلاگ
+                    </h3>
+                    <form method="GET" action="{% url 'blog:post_list' %}" class="flex gap-2">
+                        {% if current_tag %}
+                        <input type="hidden" name="tag" value="{{ current_tag.slug }}">
+                        {% endif %}
+                        <input type="search" name="q" value="{{ query }}"
+                               placeholder="کلمه کلیدی..."
+                               class="flex-1 px-4 py-2.5 text-sm bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-walnut-800 focus:border-transparent outline-none transition-all text-slate-800 dark:text-slate-100 placeholder-slate-400">
+                        <button type="submit"
+                                class="px-3.5 py-2.5 bg-walnut-900 text-white rounded-xl hover:bg-walnut-800 transition-colors shrink-0">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+
+                {# ── Popular Tags Cloud ──────────────────────────────────── #}
+                {% if all_tags %}
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-sm">
+                    <h3 class="text-sm font-black text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
+                        <span class="w-7 h-7 rounded-lg bg-walnut-100 dark:bg-walnut-950 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-walnut-900 dark:text-walnut-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/>
+                            </svg>
+                        </span>
+                        برچسب‌های محبوب
+                    </h3>
+                    <div class="flex flex-wrap gap-2">
+                        {% for tag in all_tags %}
+                        <a href="{% url 'blog:post_list' %}?tag={{ tag.slug }}"
+                           class="tag-badge {% if current_tag and current_tag.id == tag.id %}active{% endif %}">
+                            {{ tag.name }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {# ── Newsletter CTA (decorative) ────────────────────────── #}
+                <div class="bg-gradient-to-br from-walnut-900 to-walnut-800 rounded-2xl p-5 text-white shadow-lg overflow-hidden relative">
+                    <div class="absolute top-0 left-0 w-32 h-32 bg-walnut-800/50 rounded-full -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+                    <div class="relative z-10">
+                        <div class="w-11 h-11 bg-walnut-700/70 rounded-xl flex items-center justify-center mb-4">
+                            <svg class="w-5 h-5 text-walnut-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-sm font-black mb-2">خبرنامه وودن شاپ</h3>
+                        <p class="text-walnut-200 text-xs leading-relaxed mb-4">
+                            از جدیدترین مقالات، آموزش‌های صنایع دستی و اخبار چوب مطلع شوید.
+                        </p>
+                        <button class="w-full py-2.5 bg-white text-walnut-900 font-black text-xs rounded-xl hover:bg-walnut-50 transition-colors shadow-sm">
+                            عضویت در خبرنامه
+                        </button>
+                    </div>
+                </div>
+
+            </aside>
+        </div>{# end main grid #}
+    </div>
+</section>
+
+{% endblock %}

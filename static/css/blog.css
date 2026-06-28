@@ -1,0 +1,297 @@
+/* static/css/blog.css
+   Blog-specific styles using the walnut color system.
+   Walnut palette:
+     50:#fdf8f6  100:#f2e8e5  200:#eaddd7  300:#e0cec7  400:#d2bab0
+     500:#bfa094  600:#a18072  700:#977669  800:#846358  900:#5C3A21  950:#4d2f1a
+*/
+
+/* ─── Reading Progress Bar ──────────────────────────────────────────────────── */
+#reading-progress {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 3px;
+    background: transparent;
+    z-index: 9998;
+    pointer-events: none;
+}
+
+#reading-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(to left, #5C3A21, #a18072, #d2bab0);
+    transition: width 0.08s linear;
+    border-radius: 0 2px 2px 0;
+    box-shadow: 0 0 8px rgba(92, 58, 33, 0.5);
+}
+
+/* ─── Blog Card Image Zoom ──────────────────────────────────────────────────── */
+.blog-card-image-wrapper {
+    overflow: hidden;
+}
+
+.blog-card-image-wrapper img {
+    transition: transform 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.blog-card:hover .blog-card-image-wrapper img {
+    transform: scale(1.07);
+}
+
+/* ─── Tag Badge ─────────────────────────────────────────────────────────────── */
+.tag-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background-color: #f2e8e5;
+    color: #5C3A21;
+    transition: background-color 0.2s, color 0.2s, transform 0.2s;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.tag-badge:hover {
+    background-color: #5C3A21;
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.dark .tag-badge {
+    background-color: #4d2f1a;
+    color: #eaddd7;
+}
+
+.dark .tag-badge:hover {
+    background-color: #846358;
+    color: #fff;
+}
+
+.tag-badge.active {
+    background-color: #5C3A21;
+    color: #fff;
+}
+
+.dark .tag-badge.active {
+    background-color: #a18072;
+    color: #fff;
+}
+
+/* ─── Article Prose Styles ──────────────────────────────────────────────────── */
+.blog-prose {
+    font-size: 1.125rem;
+    line-height: 2;
+    color: #1e293b; /* slate-800 */
+}
+
+.dark .blog-prose {
+    color: #cbd5e1; /* slate-300 */
+}
+
+.blog-prose h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #5C3A21;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #eaddd7;
+}
+
+.dark .blog-prose h2 {
+    color: #d2bab0;
+    border-bottom-color: #4d2f1a;
+}
+
+.blog-prose h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #846358;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+}
+
+.dark .blog-prose h3 {
+    color: #bfa094;
+}
+
+.blog-prose p {
+    margin-bottom: 1.5rem;
+}
+
+.blog-prose a {
+    color: #846358;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color 0.2s;
+}
+
+.blog-prose a:hover {
+    color: #5C3A21;
+}
+
+.dark .blog-prose a {
+    color: #d2bab0;
+}
+
+.dark .blog-prose a:hover {
+    color: #eaddd7;
+}
+
+.blog-prose ul,
+.blog-prose ol {
+    margin-right: 1.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.blog-prose ul {
+    list-style-type: disc;
+}
+
+.blog-prose ol {
+    list-style-type: decimal;
+}
+
+.blog-prose li {
+    margin-bottom: 0.5rem;
+}
+
+.blog-prose strong {
+    font-weight: 700;
+    color: #5C3A21;
+}
+
+.dark .blog-prose strong {
+    color: #d2bab0;
+}
+
+.blog-prose img {
+    border-radius: 1rem;
+    margin: 2rem auto;
+    max-width: 100%;
+    box-shadow: 0 12px 40px rgba(92, 58, 33, 0.12);
+}
+
+/* ─── Custom Blockquote ─────────────────────────────────────────────────────── */
+.blog-prose blockquote {
+    position: relative;
+    margin: 2.5rem 0;
+    padding: 1.5rem 2rem 1.5rem 1.5rem;
+    background: linear-gradient(135deg, #fdf8f6 0%, #f2e8e5 100%);
+    border-right: 4px solid #5C3A21;
+    border-radius: 0 1rem 1rem 0;
+    font-style: normal;
+    color: #5C3A21;
+    font-size: 1.1rem;
+    font-weight: 500;
+    line-height: 1.8;
+}
+
+.dark .blog-prose blockquote {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border-right-color: #a18072;
+    color: #e0cec7;
+}
+
+.blog-prose blockquote::before {
+    content: '\201C';
+    position: absolute;
+    top: -0.75rem;
+    right: 1.25rem;
+    font-size: 5rem;
+    color: #5C3A21;
+    opacity: 0.15;
+    font-family: Georgia, 'Times New Roman', serif;
+    line-height: 1;
+}
+
+.dark .blog-prose blockquote::before {
+    color: #a18072;
+    opacity: 0.2;
+}
+
+/* ─── Inline Code ───────────────────────────────────────────────────────────── */
+.blog-prose code {
+    background-color: #f2e8e5;
+    color: #5C3A21;
+    padding: 0.15em 0.45em;
+    border-radius: 0.35rem;
+    font-size: 0.875em;
+    font-family: 'Courier New', Consolas, monospace;
+    direction: ltr;
+    display: inline-block;
+}
+
+.dark .blog-prose code {
+    background-color: #1e293b;
+    color: #d2bab0;
+}
+
+/* ─── Code Block ────────────────────────────────────────────────────────────── */
+.blog-prose pre {
+    background-color: #1a2537;
+    color: #e2e8f0;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    overflow-x: auto;
+    margin: 1.75rem 0;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.875rem;
+    line-height: 1.75;
+    direction: ltr;
+    text-align: left;
+}
+
+.blog-prose pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    font-size: inherit;
+}
+
+/* ─── Comment Avatar ────────────────────────────────────────────────────────── */
+.comment-avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #5C3A21 0%, #a18072 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 800;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(92, 58, 33, 0.25);
+}
+
+/* ─── Hero Gradient Overlay ─────────────────────────────────────────────────── */
+.hero-gradient {
+    background: linear-gradient(
+        to top,
+        rgba(15, 23, 42, 0.95) 0%,
+        rgba(15, 23, 42, 0.55) 50%,
+        rgba(15, 23, 42, 0.05) 100%
+    );
+}
+
+/* ─── Line-clamp Utilities (fallback for older Tailwind CDN) ────────────────── */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}

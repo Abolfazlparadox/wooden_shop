@@ -1,106 +1,498 @@
-{% extends 'base.html' %}
-{% load humanize %}
+{% extends 'base.html' %} {% load humanize %} {% load static %} {% block title
+%}فروشگاه وودن شاپ | محصولات{% endblock %} {% block content %} {#
+════════════════════════════════════════════════════════════════════════ #} {#
+HERO SECTION #} {#
+════════════════════════════════════════════════════════════════════════ #}
+<section class="relative bg-walnut-900 overflow-hidden py-16 md:py-24">
+    {# Decorative blobs #}
+    <div
+        class="absolute top-0 left-0 w-96 h-96 rounded-full bg-walnut-800 opacity-40 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+    ></div>
+    <div
+        class="absolute bottom-0 right-0 w-72 h-72 rounded-full bg-walnut-950 opacity-30 translate-x-1/3 translate-y-1/3 pointer-events-none"
+    ></div>
+    <div
+        class="absolute inset-0 opacity-5 pointer-events-none"
+        style="
+            background-image: repeating-linear-gradient(
+                45deg,
+                #fff 0,
+                #fff 1px,
+                transparent 0,
+                transparent 50%
+            );
+            background-size: 20px 20px;
+        "
+    ></div>
 
-{% block title %}محصولات{% endblock %}
+    <div
+        class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center"
+    >
+        <span
+            class="inline-block px-4 py-1.5 mb-5 text-xs font-black tracking-widest uppercase text-walnut-300 bg-walnut-800/60 rounded-full border border-walnut-700"
+        >
+            صنایع دستی · هنر · طبیعت
+        </span>
+        <h1
+            class="text-4xl md:text-5xl font-black text-white mb-4 leading-tight"
+        >
+            فروشگاه وودن شاپ
+        </h1>
+        <p
+            class="text-walnut-200 text-base md:text-lg max-w-xl mx-auto leading-relaxed mb-8"
+        >
+            محصولات دست‌ساز چوبی، هر قطعه یک اثر هنری منحصربه‌فرد
+        </p>
 
-{% block content %}
-<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-
-        <!-- Right Sidebar: Filters -->
-        <aside class="lg:col-span-1">
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg lg:sticky lg:top-24">
-                <h2 class="text-xl font-bold text-slate-900 dark:text-white mb-6">فیلتر محصولات</h2>
-                <form action="{% url 'shop:product_list' %}" method="get">
-                    <div class="space-y-6">
-                        <!-- Price Filter -->
-                        <div>
-                            <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2">فیلتر قیمت</h3>
-                            <div class="flex items-center space-x-2 space-x-reverse">
-                                <input type="number" name="min_price" value="{{ values.min_price }}" placeholder="از" class="w-full p-2 text-sm rounded-md border-gray-300 shadow-sm focus:border-walnut-800 focus:ring-walnut-800 dark:bg-slate-700 dark:border-slate-600">
-                                <span class="text-slate-500">-</span>
-                                <input type="number" name="max_price" value="{{ values.max_price }}" placeholder="تا" class="w-full p-2 text-sm rounded-md border-gray-300 shadow-sm focus:border-walnut-800 focus:ring-walnut-800 dark:bg-slate-700 dark:border-slate-600">
-                            </div>
-                        </div>
-
-                        <!-- Status Filter -->
-                        <div>
-                            <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2">وضعیت</h3>
-                            <div class="space-y-2">
-                                <label class="flex items-center">
-                                    <input type="checkbox" name="in_stock" value="on" {% if values.in_stock %}checked{% endif %} class="h-4 w-4 rounded border-gray-300 text-walnut-800 focus:ring-walnut-700">
-                                    <span class="mr-2 text-sm text-slate-600 dark:text-slate-300">موجود در انبار</span>
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="checkbox" name="special_sale" value="on" {% if values.special_sale %}checked{% endif %} class="h-4 w-4 rounded border-gray-300 text-walnut-800 focus:ring-walnut-700">
-                                    <span class="mr-2 text-sm text-slate-600 dark:text-slate-300">فروش ویژه</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Hidden fields for sorting -->
-                        <input type="hidden" name="sort" value="{{ sort_by }}">
-
-                        <button type="submit" class="w-full bg-walnut-900 text-white font-bold py-2 px-4 rounded-lg hover:bg-walnut-800 transition-colors">اعمال فیلتر</button>
-                    </div>
-                </form>
-            </div>
-        </aside>
-
-        <!-- Left Column: Products -->
-        <main class="lg:col-span-3">
-            <!-- Top Bar: Sorting & Results Count -->
-            <div class="flex flex-col sm:flex-row items-center justify-between mb-6 p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm">
-                <p class="text-sm text-slate-500 dark:text-slate-400 mb-2 sm:mb-0">
-                    نمایش {{ page_obj.start_index }}–{{ page_obj.end_index }} از {{ paginator.count }} نتیجه
-                </p>
-                <form action="{% url 'shop:product_list' %}" method="get" class="flex items-center">
-                    <input type="hidden" name="min_price" value="{{ values.min_price }}">
-                    <input type="hidden" name="max_price" value="{{ values.max_price }}">
-                    {% if values.in_stock %}<input type="hidden" name="in_stock" value="on">{% endif %}
-                    {% if values.special_sale %}<input type="hidden" name="special_sale" value="on">{% endif %}
-
-                    <select name="sort" onchange="this.form.submit()" class="text-sm rounded-md border-gray-300 shadow-sm focus:border-walnut-800 focus:ring-walnut-800 dark:bg-slate-700 dark:border-slate-600">
-                        <option value="default" {% if sort_by == 'default' %}selected{% endif %}>مرتب‌سازی پیش‌فرض</option>
-                        <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>جدیدترین</option>
-                        <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>ارزان‌ترین</option>
-                        <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>گران‌ترین</option>
-                    </select>
-                </form>
-            </div>
-
-            <!-- Product Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                {% for product in products %}
-                    {% include 'components/product_card.html' with product=product %}
-                {% empty %}
-                    <p class="col-span-full text-center text-slate-500 dark:text-slate-400">هیچ محصولی با این فیلترها یافت نشد.</p>
-                {% endfor %}
-            </div>
-
-            <!-- Pagination -->
-            {% if page_obj.has_other_pages %}
-            <nav class="mt-12 flex items-center justify-center" aria-label="Pagination">
-                <div class="flex items-center space-x-2 space-x-reverse">
-                    {% if page_obj.has_previous %}
-                        <a href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode|cut:'page='|cut:page_obj.previous_page_number }}" class="px-4 py-2 text-sm font-medium text-slate-600 bg-white dark:bg-slate-800 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700">قبلی</a>
-                    {% endif %}
-
-                    {% for i in paginator.page_range %}
-                        {% if page_obj.number == i %}
-                            <span aria-current="page" class="px-4 py-2 text-sm font-bold text-white bg-walnut-900 rounded-md">{{ i }}</span>
-                        {% else %}
-                            <a href="?page={{ i }}&{{ request.GET.urlencode|cut:'page='|cut:i }}" class="px-4 py-2 text-sm font-medium text-slate-600 bg-white dark:bg-slate-800 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700">{{ i }}</a>
-                        {% endif %}
-                    {% endfor %}
-
-                    {% if page_obj.has_next %}
-                        <a href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode|cut:'page='|cut:page_obj.next_page_number }}" class="px-4 py-2 text-sm font-medium text-slate-600 bg-white dark:bg-slate-800 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700">بعدی</a>
-                    {% endif %}
-                </div>
-            </nav>
-            {% endif %}
-        </main>
+        {# Inline search #}
+        <form
+            action="{% url 'shop:product_list' %}"
+            method="get"
+            class="max-w-xl mx-auto flex gap-2"
+        >
+            <input
+                type="search"
+                name="q"
+                value="{{ values.q }}"
+                placeholder="جستجو در محصولات..."
+                class="flex-1 px-5 py-3.5 rounded-xl bg-white/10 border border-white/25 text-white placeholder-walnut-300 focus:ring-2 focus:ring-walnut-400 focus:border-transparent outline-none backdrop-blur-sm text-sm"
+            />
+            <button
+                type="submit"
+                class="px-6 py-3.5 bg-walnut-50 text-walnut-900 font-black rounded-xl hover:bg-white transition-all text-sm shrink-0 shadow-lg"
+            >
+                جستجو
+            </button>
+        </form>
     </div>
-</div>
+</section>
+
+{# ════════════════════════════════════════════════════════════════════════ #}
+{# MAIN CONTENT: SIDEBAR + PRODUCTS #} {#
+════════════════════════════════════════════════════════════════════════ #}
+<section class="bg-slate-50 dark:bg-slate-900 py-10 md:py-14">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+            {# ═══════════════════════════════════════════════════════════════
+            #} {# FILTER SIDEBAR — col-span-1 (RIGHT in RTL) #} {#
+            ═══════════════════════════════════════════════════════════════ #}
+            <aside
+                class="lg:sticky lg:top-24 space-y-4"
+                x-data="{ priceOpen: true, statusOpen: true }"
+            >
+                {# Sidebar header #}
+                <div
+                    class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-700"
+                >
+                    <h2
+                        class="text-base font-black text-slate-800 dark:text-slate-100"
+                    >
+                        فیلتر محصولات
+                    </h2>
+                    <a
+                        href="{% url 'shop:product_list' %}"
+                        class="text-xs text-walnut-700 dark:text-walnut-400 hover:text-walnut-900 font-semibold transition-colors"
+                    >
+                        پاک‌سازی
+                    </a>
+                </div>
+
+                <form
+                    action="{% url 'shop:product_list' %}"
+                    method="get"
+                    class="space-y-3"
+                >
+                    <input type="hidden" name="sort" value="{{ sort_by }}" />
+
+                    {# ── Price Filter ────────────────────────────────────────
+                    #}
+                    <div
+                        class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 overflow-hidden shadow-sm"
+                    >
+                        <button
+                            type="button"
+                            @click="priceOpen = !priceOpen"
+                            class="w-full flex items-center justify-between p-4 text-sm font-bold text-slate-800 dark:text-slate-100"
+                        >
+                            <span class="flex items-center gap-2">
+                                <svg
+                                    class="w-4 h-4 text-walnut-700 dark:text-walnut-400"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                    />
+                                </svg>
+                                محدوده قیمت
+                            </span>
+                            <svg
+                                :class="priceOpen ? 'rotate-180' : ''"
+                                class="w-4 h-4 text-slate-400 transition-transform duration-200"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M19 9l-7 7-7-7"
+                                />
+                            </svg>
+                        </button>
+                        <div x-show="priceOpen" x-transition class="px-4 pb-4">
+                            <div class="flex items-center gap-2">
+                                <input
+                                    type="number"
+                                    name="min_price"
+                                    value="{{ values.min_price }}"
+                                    placeholder="از (تومان)"
+                                    class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-walnut-800 focus:border-transparent outline-none"
+                                />
+                                <span class="text-slate-400 text-xs shrink-0"
+                                    >تا</span
+                                >
+                                <input
+                                    type="number"
+                                    name="max_price"
+                                    value="{{ values.max_price }}"
+                                    placeholder="تا (تومان)"
+                                    class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-walnut-800 focus:border-transparent outline-none"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {# ── Status Filter ───────────────────────────────────────
+                    #}
+                    <div
+                        class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 overflow-hidden shadow-sm"
+                    >
+                        <button
+                            type="button"
+                            @click="statusOpen = !statusOpen"
+                            class="w-full flex items-center justify-between p-4 text-sm font-bold text-slate-800 dark:text-slate-100"
+                        >
+                            <span class="flex items-center gap-2">
+                                <svg
+                                    class="w-4 h-4 text-walnut-700 dark:text-walnut-400"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                                    />
+                                </svg>
+                                وضعیت موجودی
+                            </span>
+                            <svg
+                                :class="statusOpen ? 'rotate-180' : ''"
+                                class="w-4 h-4 text-slate-400 transition-transform duration-200"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M19 9l-7 7-7-7"
+                                />
+                            </svg>
+                        </button>
+                        <div
+                            x-show="statusOpen"
+                            x-transition
+                            class="px-4 pb-4 space-y-3"
+                        >
+                            <label
+                                class="flex items-center gap-3 cursor-pointer group/check"
+                            >
+                                <div class="relative">
+                                    <input
+                                        type="checkbox"
+                                        name="in_stock"
+                                        value="on"
+                                        {%
+                                        if
+                                        values.in_stock
+                                        %}checked{%
+                                        endif
+                                        %}
+                                        class="w-4 h-4 rounded border-slate-300 text-walnut-800 focus:ring-walnut-700 cursor-pointer"
+                                    />
+                                </div>
+                                <span
+                                    class="text-sm text-slate-700 dark:text-slate-300 group-hover/check:text-walnut-900 dark:group-hover/check:text-walnut-300 transition-colors"
+                                    >موجود در انبار</span
+                                >
+                            </label>
+                            <label
+                                class="flex items-center gap-3 cursor-pointer group/check"
+                            >
+                                <input
+                                    type="checkbox"
+                                    name="special_sale"
+                                    value="on"
+                                    {%
+                                    if
+                                    values.special_sale
+                                    %}checked{%
+                                    endif
+                                    %}
+                                    class="w-4 h-4 rounded border-slate-300 text-walnut-800 focus:ring-walnut-700 cursor-pointer"
+                                />
+                                <span
+                                    class="text-sm text-slate-700 dark:text-slate-300 group-hover/check:text-walnut-900 dark:group-hover/check:text-walnut-300 transition-colors"
+                                >
+                                    فروش ویژه
+                                    <span
+                                        class="mr-1 px-1.5 py-0.5 bg-red-100 text-red-600 text-xs rounded-full font-bold"
+                                        >تخفیف</span
+                                    >
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    {# Apply button #}
+                    <button
+                        type="submit"
+                        class="w-full bg-walnut-900 text-white font-black py-3 px-4 rounded-2xl hover:bg-walnut-800 transition-all shadow-md hover:shadow-lg text-sm"
+                    >
+                        اعمال فیلتر
+                    </button>
+                </form>
+            </aside>
+
+            {# ═══════════════════════════════════════════════════════════════
+            #} {# PRODUCTS AREA — col-span-3 (LEFT in RTL) #} {#
+            ═══════════════════════════════════════════════════════════════ #}
+            <main class="lg:col-span-3">
+                {# ── Top bar: count + sorting ────────────────────────────────
+                #}
+                <div
+                    class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm gap-3"
+                >
+                    <p
+                        class="text-sm text-slate-500 dark:text-slate-400 font-medium"
+                    >
+                        {% if paginator.count > 0 %} نمایش
+                        <span
+                            class="font-bold text-slate-700 dark:text-slate-200"
+                            >{{ page_obj.start_index }}–{{ page_obj.end_index
+                            }}</span
+                        >
+                        از
+                        <span
+                            class="font-bold text-walnut-900 dark:text-walnut-300"
+                            >{{ paginator.count }}</span
+                        >
+                        محصول {% else %} هیچ محصولی یافت نشد {% endif %}
+                    </p>
+                    <form
+                        action="{% url 'shop:product_list' %}"
+                        method="get"
+                        class="flex items-center gap-2 shrink-0"
+                    >
+                        <input
+                            type="hidden"
+                            name="min_price"
+                            value="{{ values.min_price }}"
+                        />
+                        <input
+                            type="hidden"
+                            name="max_price"
+                            value="{{ values.max_price }}"
+                        />
+                        {% if values.in_stock %}
+                        <input type="hidden" name="in_stock" value="on" />
+                        {% endif %} {% if values.special_sale %}
+                        <input type="hidden" name="special_sale" value="on" />
+                        {% endif %}
+                        <label
+                            class="text-xs text-slate-500 dark:text-slate-400 font-medium shrink-0"
+                            >مرتب‌سازی:</label
+                        >
+                        <select
+                            name="sort"
+                            onchange="this.form.submit()"
+                            class="text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 px-3 py-2 focus:ring-2 focus:ring-walnut-800 focus:border-transparent outline-none"
+                        >
+                            <option
+                                value="default"
+                                {%
+                                if
+                                sort_by=""
+                                ="default"
+                                %}selected{%
+                                endif
+                                %}
+                            >
+                                پیش‌فرض
+                            </option>
+                            <option
+                                value="newest"
+                                {%
+                                if
+                                sort_by=""
+                                ="newest"
+                                %}selected{%
+                                endif
+                                %}
+                            >
+                                جدیدترین
+                            </option>
+                            <option
+                                value="price_asc"
+                                {%
+                                if
+                                sort_by=""
+                                ="price_asc"
+                                %}selected{%
+                                endif
+                                %}
+                            >
+                                ارزان‌ترین
+                            </option>
+                            <option
+                                value="price_desc"
+                                {%
+                                if
+                                sort_by=""
+                                ="price_desc"
+                                %}selected{%
+                                endif
+                                %}
+                            >
+                                گران‌ترین
+                            </option>
+                        </select>
+                    </form>
+                </div>
+
+                {# ── Product grid ────────────────────────────────────────────
+                #} {% if products %}
+                <div
+                    class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"
+                >
+                    {% for product in products %} {% include
+                    'components/product_card.html' with product=product %} {%
+                    endfor %}
+                </div>
+                {% else %} {# Empty state #}
+                <div
+                    class="flex flex-col items-center justify-center py-24 text-center bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700"
+                >
+                    <div
+                        class="w-20 h-20 rounded-full bg-walnut-100 dark:bg-slate-700 flex items-center justify-center mb-5"
+                    >
+                        <svg
+                            class="w-10 h-10 text-walnut-400 dark:text-slate-500"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="1.5"
+                                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                            />
+                        </svg>
+                    </div>
+                    <h3
+                        class="text-lg font-bold text-slate-700 dark:text-slate-300 mb-2"
+                    >
+                        محصولی یافت نشد
+                    </h3>
+                    <p
+                        class="text-sm text-slate-500 dark:text-slate-400 mb-5 max-w-sm"
+                    >
+                        فیلترهای انتخاب‌شده با هیچ محصولی مطابقت ندارد. فیلترها
+                        را تغییر دهید.
+                    </p>
+                    <a
+                        href="{% url 'shop:product_list' %}"
+                        class="px-6 py-2.5 bg-walnut-900 text-white font-bold rounded-xl hover:bg-walnut-800 transition-colors text-sm shadow-md"
+                    >
+                        مشاهده همه محصولات
+                    </a>
+                </div>
+                {% endif %} {# ── Pagination
+                ────────────────────────────────────────────── #} {% if
+                page_obj.has_other_pages %}
+                <nav
+                    class="mt-10 flex items-center justify-center gap-2 flex-wrap"
+                >
+                    {% if page_obj.has_previous %}
+                    <a
+                        href="?page={{ page_obj.previous_page_number }}&min_price={{ values.min_price }}&max_price={{ values.max_price }}&sort={{ sort_by }}{% if values.in_stock %}&in_stock=on{% endif %}{% if values.special_sale %}&special_sale=on{% endif %}"
+                        class="flex items-center gap-1.5 px-4 py-2.5 bg-white dark:bg-slate-800 text-walnut-900 dark:text-walnut-300 font-bold text-sm rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-walnut-50 dark:hover:bg-slate-700 transition-all shadow-sm"
+                    >
+                        <svg
+                            class="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M9 5l7 7-7 7"
+                            />
+                        </svg>
+                        قبلی
+                    </a>
+                    {% endif %} {% for i in paginator.page_range %} {% if
+                    page_obj.number == i %}
+                    <span
+                        class="w-10 h-10 flex items-center justify-center bg-walnut-900 text-white font-black text-sm rounded-xl shadow-md"
+                        >{{ i }}</span
+                    >
+                    {% elif i > page_obj.number|add:"-3" and i <
+                    page_obj.number|add:"3" %}
+                    <a
+                        href="?page={{ i }}&min_price={{ values.min_price }}&max_price={{ values.max_price }}&sort={{ sort_by }}{% if values.in_stock %}&in_stock=on{% endif %}{% if values.special_sale %}&special_sale=on{% endif %}"
+                        class="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-sm rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-walnut-50 dark:hover:bg-slate-700 transition-all shadow-sm"
+                        >{{ i }}</a
+                    >
+                    {% endif %} {% endfor %} {% if page_obj.has_next %}
+                    <a
+                        href="?page={{ page_obj.next_page_number }}&min_price={{ values.min_price }}&max_price={{ values.max_price }}&sort={{ sort_by }}{% if values.in_stock %}&in_stock=on{% endif %}{% if values.special_sale %}&special_sale=on{% endif %}"
+                        class="flex items-center gap-1.5 px-4 py-2.5 bg-white dark:bg-slate-800 text-walnut-900 dark:text-walnut-300 font-bold text-sm rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-walnut-50 dark:hover:bg-slate-700 transition-all shadow-sm"
+                    >
+                        بعدی
+                        <svg
+                            class="w-4 h-4 rotate-180"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M9 5l7 7-7 7"
+                            />
+                        </svg>
+                    </a>
+                    {% endif %}
+                </nav>
+                {% endif %}
+            </main>
+        </div>
+    </div>
+</section>
+
 {% endblock %}
