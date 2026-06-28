@@ -20,12 +20,15 @@ class Tag(models.Model):
         super().save(*args, **kwargs)
 
 class Category(models.Model):
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children', verbose_name='دسته بندی پدر')
     name = models.CharField(max_length=255, verbose_name="نام دسته")
     slug = models.SlugField(max_length=255, unique=True, allow_unicode=True, verbose_name="اسلاگ")
+    is_sub = models.BooleanField(default=False, verbose_name='زیردسته')
 
     class Meta:
         verbose_name = "دسته بندی"
         verbose_name_plural = "دسته بندی ها"
+        ordering = ['name']
 
     def __str__(self):
         return self.name
@@ -33,8 +36,12 @@ class Category(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name, allow_unicode=True)
+        # Automatically set is_sub based on parent
+        if self.parent is not None:
+            self.is_sub = True
+        else:
+            self.is_sub = False
         super().save(*args, **kwargs)
-
 class Product(models.Model):
     category = models.ForeignKey(Category, related_name='products', on_delete=models.CASCADE, verbose_name="دسته بندی")
     tags = models.ManyToManyField(Tag, related_name='products', blank=True, verbose_name="تگ‌ها")
