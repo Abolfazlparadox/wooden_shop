@@ -12,4 +12,5 @@ urlpatterns = [
     path('forgot-password/', views.forgot_password, name='forgot_password'),
     path('reset-verify-otp/', views.reset_verify_otp, name='reset_verify_otp'),
     path('set-new-password/', views.set_new_password, name='set_new_password'),
+    path('address/set-default/<int:pk>/', views.set_default_address, name='set_default_address'),
 ]

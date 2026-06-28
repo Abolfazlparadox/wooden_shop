@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load humanize %}
+{% load l10n %}
 
 {% block title %}{{ product.title }}{% endblock %}
 
@@ -49,7 +50,7 @@
                     <div class="mt-2 grid grid-cols-2 gap-3">
                         {% for var in product.variations.all %}
                         <label class="flex items-center justify-center p-3 border rounded-md cursor-pointer has-[:checked]:bg-walnut-50 has-[:checked]:border-walnut-900 dark:has-[:checked]:bg-walnut-900/20 dark:border-slate-700 dark:has-[:checked]:border-walnut-700 transition-colors">
-                            <input type="radio" name="variation" value="{{ var.id }}" class="sr-only" data-price="{{ var.price }}" data-stock="{{ var.stock }}" {% if forloop.first %}checked{% endif %}>
+                            <input type="radio" name="variation" value="{{ var.id }}" class="sr-only" data-price="{{ var.price|unlocalize }}" data-stock="{{ var.stock|unlocalize }}" {% if forloop.first %}checked{% endif %}>
                             <span class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ var.wood_type }} - {{ var.dimensions }}</span>
                         </label>
                         {% endfor %}

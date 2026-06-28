@@ -1,16 +1,18 @@
 import random
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from datetime import timedelta
-from .forms import UserRegistrationForm, UserLoginForm, OTPVerifyForm, ForgotPasswordForm, SetNewPasswordForm
-from .models import CustomUser, OTP
+from .forms import (
+    UserRegistrationForm, UserLoginForm, OTPVerifyForm, ForgotPasswordForm, 
+    SetNewPasswordForm, ProfileInfoForm, AddressForm
+)
+from .models import CustomUser, OTP, Address
 from orders.models import Order
 
 def generate_otp(user):
-    # In a real project, this would use an SMS API like Kavenegar or Twilio
     code = str(random.randint(100000, 999999))
     OTP.objects.create(user=user, code=code)
     print(f"--- MOCK SMS: Your OTP for {user.phone_number} is: {code} ---")
@@ -24,13 +26,11 @@ def user_register(request):
         if form.is_valid():
             user = form.save(commit=False)
             user.set_password(form.cleaned_data['password'])
-            user.is_phone_verified = False # Explicitly set to false
+            user.is_phone_verified = False
             user.save()
-            
             generate_otp(user)
             request.session['phone_number_for_otp'] = user.phone_number
-            
-            messages.success(request, 'ثبت نام شما با موفقیت انجام شد. لطفا کد تایید ارسال شده را وارد کنید.')
+            messages.success(request, 'ثبت نام موفق بود. کد تایید به شماره شما ارسال شد.')
             return redirect('accounts:otp_verify')
     else:
         form = UserRegistrationForm()
@@ -39,28 +39,24 @@ def user_register(request):
 def otp_verify(request):
     phone_number = request.session.get('phone_number_for_otp')
     if not phone_number:
-        messages.error(request, 'شماره تلفن برای تایید یافت نشد. لطفا دوباره تلاش کنید.')
+        messages.error(request, 'شماره تلفن یافت نشد. لطفا مجددا تلاش کنید.')
         return redirect('accounts:register')
 
-    user = CustomUser.objects.get(phone_number=phone_number)
-
+    user = get_object_or_404(CustomUser, phone_number=phone_number)
     if request.method == 'POST':
         form = OTPVerifyForm(request.POST)
         if form.is_valid():
             code = form.cleaned_data['code']
             two_minutes_ago = timezone.now() - timedelta(minutes=2)
-            
             try:
                 otp = OTP.objects.get(user=user, code=code, is_used=False, created_at__gte=two_minutes_ago)
                 user.is_phone_verified = True
                 user.save()
                 otp.is_used = True
                 otp.save()
-                
                 login(request, user)
                 del request.session['phone_number_for_otp']
-                
-                messages.success(request, 'حساب شما با موفقیت تایید و فعال شد.')
+                messages.success(request, 'حساب شما با موفقیت فعال شد.')
                 return redirect('accounts:dashboard')
             except OTP.DoesNotExist:
                 messages.error(request, 'کد وارد شده نامعتبر یا منقضی شده است.')
@@ -82,7 +78,6 @@ def user_login(request):
                     request.session['phone_number_for_otp'] = user.phone_number
                     messages.error(request, 'حساب شما فعال نشده است. لطفا کد تایید را وارد کنید.')
                     return redirect('accounts:otp_verify')
-                
                 login(request, user)
                 messages.success(request, 'شما با موفقیت وارد شدید.')
                 return redirect('accounts:dashboard')
@@ -100,9 +95,46 @@ def user_logout(request):
 
 @login_required
 def user_dashboard(request):
-    orders = Order.objects.filter(user=request.user).order_by('-created_at')
-    context = {'orders': orders}
+    user = request.user
+    profile_form = ProfileInfoForm(instance=user)
+    address_form = AddressForm()
+    
+    if request.method == 'POST':
+        if 'update_profile' in request.POST:
+            profile_form = ProfileInfoForm(request.POST, instance=user)
+            if profile_form.is_valid():
+                profile_form.save()
+                messages.success(request, 'اطلاعات حساب شما با موفقیت به روز شد.')
+                return redirect('accounts:dashboard')
+
+        elif 'add_address' in request.POST:
+            address_form = AddressForm(request.POST)
+            if address_form.is_valid():
+                address = address_form.save(commit=False)
+                address.user = user
+                address.save()
+                messages.success(request, 'آدرس جدید با موفقیت اضافه شد.')
+                return redirect('accounts:dashboard')
+    
+    orders = Order.objects.filter(user=user).order_by('-created_at')
+    addresses = Address.objects.filter(user=user)
+
+    context = {
+        'orders': orders,
+        'addresses': addresses,
+        'profile_form': profile_form,
+        'address_form': address_form,
+        'section': request.GET.get('section', 'orders')
+    }
     return render(request, 'accounts/dashboard.html', context)
+
+@login_required
+def set_default_address(request, pk):
+    address = get_object_or_404(Address, pk=pk, user=request.user)
+    address.is_default = True
+    address.save()
+    messages.success(request, 'آدرس پیش فرض با موفقیت تغییر کرد.')
+    return redirect('accounts:dashboard')
 
 def forgot_password(request):
     if request.method == 'POST':

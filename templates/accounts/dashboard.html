@@ -7,85 +7,55 @@
 <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
 
-        <!-- Left Panel: User Info -->
+        <!-- Right Sidebar: Navigation -->
         <aside class="lg:col-span-1">
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg lg:sticky lg:top-24">
-                <div class="flex flex-col items-center text-center">
-                    <div class="w-24 h-24 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center mb-4">
-                        <span class="text-4xl text-slate-500 dark:text-slate-300">{{ user.first_name|first|default:'ک' }}</span>
-                    </div>
-                    <h2 class="text-xl font-bold text-slate-900 dark:text-white">{{ user.first_name }} {{ user.last_name }}</h2>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ user.phone_number }}</p>
-                </div>
-                <nav class="mt-8 space-y-2">
-                    <a href="{% url 'accounts:dashboard' %}" class="flex items-center space-x-3 space-x-reverse px-4 py-2 text-base font-semibold text-white bg-walnut-900 rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+            <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-lg lg:sticky lg:top-24">
+                <nav class="space-y-1">
+                    <a href="?section=orders" class="flex items-center space-x-3 space-x-reverse px-4 py-3 text-sm font-semibold rounded-lg {% if section == 'orders' %}text-white bg-walnut-900{% else %}text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700{% endif %}">
                         <span>تاریخچه سفارشات</span>
                     </a>
-                    <!-- Add other dashboard links here -->
-                </nav>
-                <div class="mt-8 border-t border-slate-200 dark:border-slate-700 pt-6">
-                    <a href="{% url 'accounts:logout' %}" class="group flex w-full items-center space-x-3 space-x-reverse rounded-md px-4 py-2 text-base font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    <a href="?section=addresses" class="flex items-center space-x-3 space-x-reverse px-4 py-3 text-sm font-semibold rounded-lg {% if section == 'addresses' %}text-white bg-walnut-900{% else %}text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700{% endif %}">
+                        <span>آدرس‌ها</span>
+                    </a>
+                    <a href="?section=profile" class="flex items-center space-x-3 space-x-reverse px-4 py-3 text-sm font-semibold rounded-lg {% if section == 'profile' %}text-white bg-walnut-900{% else %}text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700{% endif %}">
+                        <span>اطلاعات حساب</span>
+                    </a>
+                    <a href="?section=password" class="flex items-center space-x-3 space-x-reverse px-4 py-3 text-sm font-semibold rounded-lg {% if section == 'password' %}text-white bg-walnut-900{% else %}text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700{% endif %}">
+                        <span>تغییر رمز عبور</span>
+                    </a>
+                    <a href="{% url 'accounts:logout' %}" class="flex items-center space-x-3 space-x-reverse px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 rounded-lg">
                         <span>خروج از حساب</span>
                     </a>
-                </div>
+                </nav>
             </div>
         </aside>
 
-        <!-- Right Panel: Order History -->
+        <!-- Left Panel: Content -->
         <main class="lg:col-span-3">
             <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg">
-                <h1 class="text-2xl font-bold text-slate-900 dark:text-white mb-6">تاریخچه سفارشات</h1>
 
-                {% if orders %}
-                <div class="overflow-x-auto">
-                    <table class="min-w-full text-sm text-right">
-                        <thead class="bg-slate-50 dark:bg-slate-700/50">
-                            <tr>
-                                <th scope="col" class="px-4 py-3 font-medium text-slate-600 dark:text-slate-300">شماره سفارش</th>
-                                <th scope="col" class="px-4 py-3 font-medium text-slate-600 dark:text-slate-300">تاریخ</th>
-                                <th scope="col" class="px-4 py-3 font-medium text-slate-600 dark:text-slate-300">مبلغ کل</th>
-                                <th scope="col" class="px-4 py-3 font-medium text-slate-600 dark:text-slate-300">وضعیت</th>
-                                <th scope="col" class="px-4 py-3 font-medium text-slate-600 dark:text-slate-300">کد رهگیری</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
-                            {% for order in orders %}
-                            <tr>
-                                <td class="px-4 py-4 font-mono text-slate-700 dark:text-slate-300">#{{ order.id }}</td>
-                                <td class="px-4 py-4 text-slate-500 dark:text-slate-400">{{ order.created_at|date:"Y/m/d" }}</td>
-                                <td class="px-4 py-4 font-semibold text-slate-800 dark:text-slate-200">{{ order.total_price|intcomma }} تومان</td>
-                                <td class="px-4 py-4">
-                                    <span class="px-2 py-1 text-xs font-medium rounded-full
-                                        {% if order.status == 'shipped' %} bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300
-                                        {% elif order.status == 'processing' %} bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300
-                                        {% elif order.status == 'cancelled' %} bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300
-                                        {% else %} bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300 {% endif %}">
-                                        {{ order.get_status_display }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-4 font-mono text-slate-500 dark:text-slate-400">{{ order.tracking_code|default:"-" }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                <!-- Orders Section -->
+                <div id="orders" class="dashboard-section {% if section != 'orders' %}hidden{% endif %}">
+                    {% include 'accounts/partials/dashboard_orders.html' %}
                 </div>
-                {% else %}
-                <div class="text-center py-12 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg">
-                    <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
-                    <h3 class="mt-2 text-lg font-medium text-slate-800 dark:text-white">هیچ سفارشی یافت نشد</h3>
-                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">شما هنوز هیچ سفارشی ثبت نکرده‌اید.</p>
-                    <div class="mt-6">
-                        <a href="{% url 'shop:product_list' %}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-walnut-900 hover:bg-walnut-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-walnut-700">
-                            بازگشت به فروشگاه
-                        </a>
-                    </div>
+
+                <!-- Addresses Section -->
+                <div id="addresses" class="dashboard-section {% if section != 'addresses' %}hidden{% endif %}">
+                    {% include 'accounts/partials/dashboard_addresses.html' %}
                 </div>
-                {% endif %}
+
+                <!-- Profile Section -->
+                <div id="profile" class="dashboard-section {% if section != 'profile' %}hidden{% endif %}">
+                    {% include 'accounts/partials/dashboard_profile.html' %}
+                </div>
+
+                <!-- Password Change Section -->
+                <div id="password" class="dashboard-section {% if section != 'password' %}hidden{% endif %}">
+                    {% include 'accounts/partials/dashboard_password.html' %}
+                </div>
+
             </div>
         </main>
-
     </div>
 </div>
 {% endblock %}

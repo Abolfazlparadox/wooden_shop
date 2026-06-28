@@ -1,16 +1,71 @@
-from django.views.generic import ListView, DetailView
 from django.shortcuts import render, redirect
-from .models import Product, ProductVariation, Category, Review
+from django.views.generic import DetailView
+from django.core.paginator import Paginator
+from django.db.models import Q
+from .models import Product, Category, Review
 from .forms import ReviewForm
 
-class ProductListView(ListView):
-    model = Product
-    template_name = 'shop/product_list.html'
-    context_object_name = 'products'
+def home_page(request):
+    categories = Category.objects.all()
+    featured_products = Product.objects.filter(is_active=True).order_by('-created_at')[:8]
+    context = {
+        'categories': categories,
+        'featured_products': featured_products,
+    }
+    return render(request, 'shop/home.html', context)
 
-    def get_queryset(self):
-        return Product.objects.filter(is_active=True).order_by('-created_at')
+def product_list(request):
+    products = Product.objects.filter(is_active=True)
 
+    # Search
+    query = request.GET.get('q')
+    if query:
+        products = products.filter(
+            Q(title__icontains=query) |
+            Q(description__icontains=query)
+        )
+
+    # Filtering
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    in_stock = request.GET.get('in_stock')
+    special_sale = request.GET.get('special_sale')
+
+    if min_price:
+        products = products.filter(variations__price__gte=min_price)
+    if max_price:
+        products = products.filter(variations__price__lte=max_price)
+    if in_stock:
+        products = products.filter(variations__stock__gt=0)
+    if special_sale:
+        products = products.filter(variations__discount_price__isnull=False)
+
+    # Sorting
+    sort_by = request.GET.get('sort', 'default')
+    if sort_by == 'price_asc':
+        products = products.order_by('variations__price')
+    elif sort_by == 'price_desc':
+        products = products.order_by('-variations__price')
+    elif sort_by == 'newest':
+        products = products.order_by('-created_at')
+    else: # default
+        products = products.order_by('-created_at')
+    
+    products = products.distinct()
+
+    # Pagination
+    paginator = Paginator(products, 9)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'products': page_obj,
+        'page_obj': page_obj,
+        'paginator': paginator,
+        'sort_by': sort_by,
+        'values': request.GET
+    }
+    return render(request, 'shop/product_list.html', context)
 
 class ProductDetailView(DetailView):
     model = Product
@@ -27,12 +82,10 @@ class ProductDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         product = self.get_object()
         
-        # Inject related products
         context['related_products'] = Product.objects.filter(
             category=product.category, is_active=True
         ).exclude(pk=product.pk)[:4]
         
-        # Inject reviews and review form
         context['reviews'] = product.reviews.all()
         context['review_form'] = ReviewForm()
         
@@ -50,9 +103,7 @@ class ProductDetailView(DetailView):
                 new_review.save()
                 return redirect(self.object.get_absolute_url())
             else:
-                # Handle case for non-authenticated users, e.g., redirect to login
-                return redirect('login') # Assuming you have a login URL named 'login'
+                return redirect('accounts:login')
 
-        # If form is not valid, re-render the page with the form and errors
         context = self.get_context_data(object=self.object, review_form=review_form)
         return self.render_to_response(context)
