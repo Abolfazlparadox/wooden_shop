@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if page_type == 'register' %}ثبت نام{% else %}ورود{% endif %}{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-[60vh] px-4 sm:px-6 lg:px-8">
+    <div class="w-full max-w-md space-y-8">
+        <div class="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-lg">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+                    {% if page_type == 'register' %}
+                        ایجاد حساب کاربری
+                    {% else %}
+                        ورود به حساب کاربری
+                    {% endif %}
+                </h2>
+                <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                    {% if page_type == 'register' %}
+                        حساب کاربری دارید؟ <a href="{% url 'accounts:login' %}" class="font-medium text-walnut-800 hover:text-walnut-700 dark:text-walnut-400 dark:hover:text-walnut-300">وارد شوید</a>
+                    {% else %}
+                        حساب کاربری ندارید؟ <a href="{% url 'accounts:register' %}" class="font-medium text-walnut-800 hover:text-walnut-700 dark:text-walnut-400 dark:hover:text-walnut-300">ثبت نام کنید</a>
+                    {% endif %}
+                </p>
+            </div>
+
+            <form id="auth-form" class="mt-8 space-y-6" action="" method="POST" novalidate>
+                {% csrf_token %}
+                <div class="space-y-4 rounded-md">
+                    {% for field in form %}
+                    <div>
+                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.name == 'password' and page_type == 'register' %}
+                        <div class="mt-2">
+                            <div class="h-2 w-full bg-slate-200 dark:bg-slate-700 rounded-full">
+                                <div id="password-strength-bar" class="h-2 rounded-full transition-all duration-300"></div>
+                            </div>
+                            <p id="password-strength-text" class="text-xs mt-1 text-right"></p>
+                        </div>
+                        {% endif %}
+                        {% if field.errors %}
+                            <p class="mt-1 text-xs text-red-500">{{ field.errors|first }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% if page_type == 'login' %}
+                <div class="text-sm text-left">
+                    <a href="{% url 'accounts:forgot_password' %}" class="font-medium text-walnut-800 hover:text-walnut-700 dark:text-walnut-400 dark:hover:text-walnut-300">
+                        فراموشی رمز عبور
+                    </a>
+                </div>
+                {% endif %}
+
+                <div>
+                    <button type="submit" id="submit-button" class="group relative flex w-full justify-center rounded-md border border-transparent bg-walnut-900 py-3 px-4 text-lg font-semibold text-white hover:bg-walnut-800 focus:outline-none focus:ring-2 focus:ring-walnut-700 focus:ring-offset-2 dark:focus:ring-offset-slate-800 transition-colors disabled:bg-slate-400 dark:disabled:bg-slate-600">
+                        {% if page_type == 'register' %}
+                            ثبت نام
+                        {% else %}
+                            ورود
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const passwordField = document.getElementById('password-field');
+    const strengthBar = document.getElementById('password-strength-bar');
+    const strengthText = document.getElementById('password-strength-text');
+    const submitButton = document.getElementById('submit-button');
+
+    if (passwordField) {
+        passwordField.addEventListener('input', function() {
+            const password = passwordField.value;
+            let score = 0;
+            if (password.length >= 8) score++;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;
+            if (/[0-9]/.test(password)) score++;
+            if (/[^A-Za-z0-9]/.test(password)) score++;
+
+            strengthBar.classList.remove('bg-red-500', 'bg-yellow-500', 'bg-green-500');
+
+            switch (score) {
+                case 0:
+                case 1:
+                    strengthBar.style.width = '25%';
+                    strengthBar.classList.add('bg-red-500');
+                    strengthText.textContent = 'ضعیف';
+                    strengthText.className = 'text-xs mt-1 text-right text-red-500';
+                    if (submitButton) submitButton.disabled = true;
+                    break;
+                case 2:
+                    strengthBar.style.width = '50%';
+                    strengthBar.classList.add('bg-yellow-500');
+                    strengthText.textContent = 'متوسط';
+                    strengthText.className = 'text-xs mt-1 text-right text-yellow-500';
+                    if (submitButton) submitButton.disabled = false;
+                    break;
+                case 3:
+                    strengthBar.style.width = '75%';
+                    strengthBar.classList.add('bg-green-500');
+                    strengthText.textContent = 'خوب';
+                    strengthText.className = 'text-xs mt-1 text-right text-green-500';
+                    if (submitButton) submitButton.disabled = false;
+                    break;
+                case 4:
+                    strengthBar.style.width = '100%';
+                    strengthBar.classList.add('bg-green-500');
+                    strengthText.textContent = 'عالی';
+                    strengthText.className = 'text-xs mt-1 text-right text-green-500';
+                    if (submitButton) submitButton.disabled = false;
+                    break;
+            }
+            if(password.length === 0) {
+                strengthBar.style.width = '0%';
+                strengthText.textContent = '';
+                if (submitButton) submitButton.disabled = false;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
