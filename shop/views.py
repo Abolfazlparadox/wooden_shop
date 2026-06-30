@@ -1,7 +1,7 @@
 from django.core.paginator import Paginator
 from django.db.models import Prefetch, Q
 from django.http import JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.views.generic import DetailView
 
 from .forms import ReviewForm
@@ -44,70 +44,75 @@ def search_suggestions_api(request):
 
 
 def home_page(request):
-    categories = Category.objects.all()
-    featured_products = Product.objects.filter(is_active=True).order_by("-created_at")[
-        :8
-    ]
+    # Requirement 2: Fetch 4 random categories and 4 random products
+    categories = Category.objects.filter(is_sub=False).order_by('?')[:4]
+    featured_products = Product.objects.filter(is_active=True).order_by('?')[:4]
+
     context = {
-        "categories": categories,
-        "featured_products": featured_products,
+        'categories': categories,
+        'featured_products': featured_products,
     }
-    return render(request, "shop/home.html", context)
+    return render(request, 'shop/home.html', context)
 
 
-def product_list(request):
+def product_list(request, category_slug=None):
     products = Product.objects.filter(is_active=True)
 
+    # Requirement 1: Handle category filtering from URL
+    category = None
+    if category_slug:
+        category = get_object_or_404(Category, slug=category_slug)
+        products = products.filter(category=category)
+
     # Search
-    query = request.GET.get("q")
+    query = request.GET.get('q')
     if query:
         products = products.filter(
-            Q(title__icontains=query)
-            | Q(description__icontains=query)
-            | Q(tags__name__icontains=query)
-        )
+            Q(title__icontains=query) |
+            Q(description__icontains=query) |
+            Q(tags__name__icontains=query)
+        ).distinct()
 
-    # Filtering
-    min_price = request.GET.get("min_price")
-    max_price = request.GET.get("max_price")
-    in_stock = request.GET.get("in_stock")
-    special_sale = request.GET.get("special_sale")
+    # Filtering from GET params
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    in_stock = request.GET.get('in_stock')
+    special_sale = request.GET.get('special_sale')
 
     if min_price:
-        products = products.filter(variations__price__gte=min_price)
+        products = products.filter(variations__price__gte=min_price).distinct()
     if max_price:
-        products = products.filter(variations__price__lte=max_price)
+        products = products.filter(variations__price__lte=max_price).distinct()
     if in_stock:
-        products = products.filter(variations__stock__gt=0)
+        products = products.filter(variations__stock__gt=0).distinct()
     if special_sale:
-        products = products.filter(variations__discount_price__isnull=False)
+        products = products.filter(variations__discount_price__isnull=False).distinct()
 
     # Sorting
-    sort_by = request.GET.get("sort", "default")
-    if sort_by == "price_asc":
-        products = products.order_by("variations__price")
-    elif sort_by == "price_desc":
-        products = products.order_by("-variations__price")
-    elif sort_by == "newest":
-        products = products.order_by("-created_at")
-    else:  # default
-        products = products.order_by("-created_at")
-
-    products = products.distinct()
+    sort_by = request.GET.get('sort', 'default')
+    if sort_by == 'price_asc':
+        products = products.order_by('variations__price').distinct()
+    elif sort_by == 'price_desc':
+        products = products.order_by('-variations__price').distinct()
+    elif sort_by == 'newest':
+        products = products.order_by('-created_at').distinct()
+    else: # default
+        products = products.order_by('-created_at').distinct()
 
     # Pagination
     paginator = Paginator(products, 9)
-    page_number = request.GET.get("page")
+    page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     context = {
-        "products": page_obj,
-        "page_obj": page_obj,
-        "paginator": paginator,
-        "sort_by": sort_by,
-        "values": request.GET,
+        'products': page_obj,
+        'page_obj': page_obj,
+        'paginator': paginator,
+        'current_category': category,
+        'sort_by': sort_by,
+        'values': request.GET
     }
-    return render(request, "shop/product_list.html", context)
+    return render(request, 'shop/product_list.html', context)
 
 
 class ProductDetailView(DetailView):

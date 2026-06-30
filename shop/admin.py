@@ -1,7 +1,7 @@
 from django.contrib import admin
-
+from django.utils.html import format_html
 from .models import Category, Product, ProductImage, ProductVariation, Review, Tag
-
+from django.urls import reverse
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
@@ -70,13 +70,18 @@ class ProductImageAdmin(admin.ModelAdmin):
 
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
-    list_display = ("product", "user", "rating", "is_approved", "parent", "created_at")
-    list_filter = ("is_approved", "rating", "created_at")
-    list_editable = ("is_approved",)
-    search_fields = ("product__title", "user__phone_number", "comment")
-    raw_id_fields = ("parent",)
-    readonly_fields = ("created_at",)
-    actions = ["approve_reviews", "reject_reviews"]
+    list_display = ('product', 'user', 'rating', 'is_approved', 'created_at', 'reply_to_review')
+    list_filter = ('is_approved', 'rating', 'created_at')
+    search_fields = ('product__title', 'user__phone_number', 'comment')
+    list_editable = ('is_approved',)
+    autocomplete_fields = ('product', 'user', 'parent') # Makes dropdowns searchable
+
+    def reply_to_review(self, obj):
+        if obj.parent is None: # Only show for top-level comments
+            url = reverse('admin:shop_review_add') + f'?parent={obj.id}'
+            return format_html('<a href="{}">پاسخ به این نظر</a>', url)
+        return "-"
+    reply_to_review.short_description = 'پاسخ سریع'
 
     @admin.action(description="✅ تایید نظرات انتخاب شده")
     def approve_reviews(self, request, queryset):

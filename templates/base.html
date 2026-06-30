@@ -323,93 +323,30 @@
 
                         <!-- Categories Dropdown (Hover) -->
                         <div class="relative group cursor-pointer">
-                            <div
-                                class="flex items-center space-x-1 space-x-reverse py-4 text-base font-bold text-slate-700 dark:text-slate-200 hover:text-walnut-900 dark:hover:text-walnut-300 transition-colors after:absolute after:bottom-0 after:right-0 after:w-0 hover:after:w-full after:h-[3px] after:bg-walnut-900 dark:after:bg-walnut-400 after:transition-all after:duration-300"
-                            >
+                            <button class="flex items-center space-x-1 space-x-reverse text-base font-medium text-slate-700 dark:text-slate-200 hover:text-walnut-900 dark:hover:text-walnut-300 after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:w-0 after:bg-walnut-800 after:transition-all after:duration-300 hover:after:w-full">
                                 <span>دسته‌بندی‌ها</span>
-                                <svg
-                                    class="w-4 h-4 mt-0.5 transition-transform duration-300 group-hover:rotate-180"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M19 9l-7 7-7-7"
-                                    ></path>
-                                </svg>
-                            </div>
-
-                            <!-- Main Dropdown Box -->
-                            <div
-                                class="absolute right-0 top-full w-60 bg-white dark:bg-slate-800 rounded-b-xl shadow-2xl border border-t-0 border-slate-100 dark:border-slate-700 opacity-0 invisible translate-y-4 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 z-[100]"
-                            >
-                                <ul class="py-3">
-                                    <li
-                                        class="px-5 py-2.5 hover:bg-walnut-50 dark:hover:bg-slate-700 transition-colors"
-                                    >
-                                        <a
-                                            href="{% url 'shop:product_list' %}"
-                                            class="block text-sm font-bold text-slate-800 dark:text-slate-100"
-                                            >همه محصولات</a
-                                        >
-                                    </li>
-                                    <div
-                                        class="h-px bg-slate-100 dark:bg-slate-700 my-1 mx-4"
-                                    ></div>
-
-                                    <!-- Categories Loop -->
+                                <svg class="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </button>
+                            <div class="absolute right-0 mt-2 min-w-[220px] origin-top-right bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-[100] opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transform translate-y-2 transition-all duration-300">
+                                <div class="p-2">
                                     {% for category in menu_categories %}
-                                    <li
-                                        class="relative group/sub px-5 py-2.5 hover:bg-walnut-50 dark:hover:bg-slate-700 transition-colors"
-                                    >
-                                        <a
-                                            href="{{ category.get_absolute_url }}"
-                                            class="flex items-center justify-between text-sm font-medium text-slate-700 dark:text-slate-200"
-                                        >
-                                            <span>{{ category.name }}</span>
+                                        <div class="group/sub relative">
+                                            <a href="{% url 'shop:product_list_by_category' category.slug %}" class="flex items-center justify-between w-full px-3 py-2 text-sm rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                                                <span>{{ category.name }}</span>
+                                                {% if category.children.all %}<svg class="w-4 h-4 transform -rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>{% endif %}
+                                            </a>
                                             {% if category.children.all %}
-                                            <svg
-                                                class="w-4 h-4 transform rotate-90 text-slate-400"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    stroke-width="2"
-                                                    d="M9 5l7 7-7 7"
-                                                ></path>
-                                            </svg>
+                                            <div class="absolute right-full top-0 -mt-2 min-w-[220px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl opacity-0 invisible group-hover/sub:opacity-100 group-hover/sub:visible transform translate-x-2 transition-all duration-300">
+                                                <div class="p-2">
+                                                    {% for child in category.children.all %}
+                                                        <a href="{% url 'shop:product_list_by_category' child.slug %}" class="block px-3 py-2 text-sm rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">{{ child.name }}</a>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
                                             {% endif %}
-                                        </a>
-
-                                        <!-- Nested Tree Dropdown (If category has children) -->
-                                        {% if category.children.all %}
-                                        <div
-                                            class="absolute right-full top-0 w-52 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-100 dark:border-slate-700 opacity-0 invisible translate-x-4 group-hover/sub:opacity-100 group-hover/sub:visible group-hover/sub:translate-x-0 transition-all duration-300 z-[101]"
-                                        >
-                                            <ul class="py-2">
-                                                {% for child in category.children.all %}
-                                                <li
-                                                    class="px-5 py-2.5 hover:bg-walnut-50 dark:hover:bg-slate-700 transition-colors"
-                                                >
-                                                    <a
-                                                        href="{{ child.get_absolute_url }}"
-                                                        class="block text-sm font-medium text-slate-700 dark:text-slate-200"
-                                                        >{{ child.name }}</a
-                                                    >
-                                                </li>
-                                                {% endfor %}
-                                            </ul>
                                         </div>
-                                        {% endif %}
-                                    </li>
                                     {% endfor %}
-                                </ul>
+                                </div>
                             </div>
                         </div>
 
